@@ -977,9 +977,13 @@ public final class Vector3f implements Cloneable, java.io.Serializable {
         if (this == o) { return true; }
 
         Vector3f comp = (Vector3f) o;
-        if (Float.compare(x,comp.x) != 0) return false;
-        if (Float.compare(y,comp.y) != 0) return false;
-        if (Float.compare(z,comp.z) != 0) return false;
+//        if (Float.compare(x,comp.x) != 0) return false;
+//        if (Float.compare(y,comp.y) != 0) return false;
+//        if (Float.compare(z,comp.z) != 0) return false;
+		double EPSILON = 0.001;
+		if (Math.abs(x-comp.x) > EPSILON) return false;
+		if (Math.abs(y-comp.y) > EPSILON) return false;
+		if (Math.abs(z-comp.z) > EPSILON) return false;
         return true;
     }
 
