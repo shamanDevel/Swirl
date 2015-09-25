@@ -14,7 +14,7 @@ public class SwirlInterpolation implements Interpolation {
 
 	private float m;
 	Vector3f N = new Vector3f();
-	private double alpha;
+	private float alpha;
 	Vector3f F;
 
 	@Override
@@ -166,36 +166,55 @@ public class SwirlInterpolation implements Interpolation {
 
 	@Override
 	public void interpolate(float t, Frame toSet) {
-		interpolate(t, start.P, toSet.P);
+		interpolate(t, start.P, toSet.P, true);
+		Vector3f refP = new Vector3f();
+		interpolate(t, start.P, refP, false);
 
 		Vector3f tmp = start.P.add(start.I);
-		interpolate(t, tmp, toSet.I);
-		toSet.I.subtractLocal(toSet.P);
+		interpolate(t, tmp, toSet.I, false);
+		toSet.I.subtractLocal(refP);
 
 		tmp = start.P.add(start.J);
-		interpolate(t, tmp, toSet.J);
-		toSet.J.subtractLocal(toSet.P);
+		interpolate(t, tmp, toSet.J, false);
+		toSet.J.subtractLocal(refP);
 		
 		tmp = start.P.add(start.K);
-		interpolate(t, tmp, toSet.K);
-		toSet.K.subtractLocal(toSet.P);
+		interpolate(t, tmp, toSet.K, false);
+		toSet.K.subtractLocal(refP);
 
 //		System.out.println("Frame at t="+t+": "+toSet);
 	}
 
-	private void interpolate(double t, Vector3f P0, Vector3f store) {
+	private void interpolate(float t, Vector3f P0, Vector3f store, boolean lerpZ) {
 		store.set(F);
 		Vector3f FP0 = P0.subtract(F);
-		Vector3f rot = rotate(t * alpha, FP0);
+		Vector3f rot = rotate2(alpha, t, FP0, lerpZ);
+//		Vector3f rot = rotate(alpha*t, FP0);
 		store.addScaleLocal(rot, (float) Math.pow(m, t));
 	}
+	
+	private Vector3f lerp(Vector3f A, Vector3f B, float t) {
+		Vector3f result = new Vector3f();
+		result.addScaleLocal(A, 1-t);
+		result.addScaleLocal(B, t);
+		return result;
+	}
 
-	private Vector3f rotate(double angle, Vector3f X) {
+	private Vector3f rotate(float angle, Vector3f X) {
 		Vector3f W = project(X, N);
 		Vector3f U = X.subtract(W);
 		Vector3f result = new Vector3f(W);
 		result.addScaleLocal(U, (float) Math.cos(angle));
 		result.addScaleLocal(N.cross(U), -(float) Math.sin(angle));
+		return result;
+	}
+	
+	private Vector3f rotate2(float angle, float t, Vector3f X, boolean lerpZ) {
+		Vector3f W = project(X, N);
+		Vector3f U = X.subtract(W);
+		Vector3f result = lerp(W, W.negate(), lerpZ ? t : 0);
+		result.addScaleLocal(U, (float) Math.cos(angle*t));
+		result.addScaleLocal(N.cross(U), -(float) Math.sin(angle*t));
 		return result;
 	}
 

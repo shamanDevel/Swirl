@@ -66,9 +66,9 @@ public class Swirl extends PApplet {
 		quat.multLocal(startFrame.K);
 		
 		endFrame.P.set(4, 1, 1);
-		endFrame.I.set(1.5f, 0, 0);
-		endFrame.J.set(0, 1.5f, 0);
-		endFrame.K.set(0, 0, 1.5f);
+		endFrame.I.set(1.1f, 0, 0);
+		endFrame.J.set(0, 1.1f, 0);
+		endFrame.K.set(0, 0, 1.1f);
 		quat.fromAngles(DEG_TO_RAD * -60, DEG_TO_RAD * 15, DEG_TO_RAD * 30);
 		quat.multLocal(endFrame.I);
 		quat.multLocal(endFrame.J);
