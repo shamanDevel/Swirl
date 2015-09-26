@@ -34,30 +34,8 @@ public class SwirlInterpolation implements Interpolation {
 		System.out.println(" scaling m=" + m);
 		System.out.println(" rotation axis N=" + N);
 		System.out.println(" rotation angle alpha=" + alpha + "  ( " + (alpha * 180 / Math.PI) + "° )");
-
-		//Calculate F
-//		Vector3f lhs = new Vector3f(end.P);
-//		Vector3f P0projN = N.mult(start.P.dot(N));
-//		lhs.addScaleLocal(P0projN, m);
-//		lhs.addScaleLocal(P0projN.subtract(start.P), (float) (m*Math.cos(alpha)));
-//		lhs.addScaleLocal(N.cross(start.P), (float) (-m*Math.sin(alpha)));
-//		float a = (float) (1-m*Math.cos(alpha));
-//		float b = (float) (m+m*Math.cos(alpha));
-//		float c = (float) (m*Math.sin(alpha));
-//		Matrix3f M = new Matrix3f();
-//		M.m00 = a + b*N.x*N.x;
-//		M.m01 = b*N.y*N.x - c*N.z;
-//		M.m02 = b*N.z*N.x + c*N.y;
-//		M.m10 = b*N.x*N.y + c*N.z;
-//		M.m11 = a + b*N.y*N.y;
-//		M.m12 = b*N.z*N.y - c*N.x;
-//		M.m20 = b*N.x*N.z - c*N.y;
-//		M.m21 = b*N.y*N.z + c*N.x;
-//		M.m22 = a + b*N.z*N.z;
-//		F = solve(M, lhs);
 		
 		calcF();
-//		calcF2();
 		
 		//Test
 		Vector3f test = new Vector3f();
@@ -134,39 +112,6 @@ public class SwirlInterpolation implements Interpolation {
 		fz /= D;
 		
 		F = new Vector3f((float) fx, (float) fy, (float) fz);
-	}
-	
-	private void calcF2() {
-		//Create basis I,J,K
-		Vector3f I = projectOnPlane(start.I.normalize(), N).normalizeLocal();
-		Vector3f J = N.cross(I);
-		
-		Vector2f A = new Vector2f(start.P.dot(I), start.P.dot(J));
-//		Vector2f B = new Vector2f((start.P.add(start.I)).dot(I), (start.P.add(start.I)).dot(J));
-		Vector2f C = new Vector2f(end.P.dot(I), end.P.dot(J));
-//		Vector2f D = new Vector2f((end.P.add(end.I)).dot(I), (end.P.add(end.I)).dot(J));
-//		Vector2f AB = B.subtract(A);
-//		Vector2f CD = D.subtract(C);
-//		float alpha2d = AB.normalize().angleBetween(CD.normalize());
-//		float scale2d = CD.length() / AB.length();
-//		Vector2f center = spiralCenter(alpha2d, scale2d, A, C);
-		Vector2f center = spiralCenter(alpha, m, A, C);
-		
-		float z = (start.P.dot(N) + end.P.dot(N)) / 2;
-		F = new Vector3f();
-		F.addScaleLocal(I, center.x);
-		F.addScaleLocal(J, center.y);
-		F.addScaleLocal(N, z);
-	}
-	private static final float sq(float x) {return x*x;}
-	private Vector2f spiralCenter(float a, float z, Vector2f A, Vector2f C) {
-		float c = (float) Math.cos(a), s = (float) Math.sin(a);
-		float D = sq(c * z - 1) + sq(s * z);
-		float ex = c * z * A.x - C.x - s * z * A.y;
-		float ey = c * z * A.y - C.y + s * z * A.x;
-		float x = (ex * (c * z - 1) + ey * s * z) / D;
-		float y = (ey * (c * z - 1) - ex * s * z) / D;
-		return new Vector2f(x, y);
 	}
 
 	private boolean calcNAlpha() {
@@ -304,6 +249,12 @@ public class SwirlInterpolation implements Interpolation {
 		return result;
 	}
 
+	/**
+	 * Traditional rotation
+	 * @param angle
+	 * @param X
+	 * @return 
+	 */
 	private Vector3f rotate(float angle, Vector3f X) {
 		Vector3f W = project(X, N);
 		Vector3f U = X.subtract(W);
@@ -313,6 +264,15 @@ public class SwirlInterpolation implements Interpolation {
 		return result;
 	}
 	
+	/**
+	 * Modified rotation, the vector W along the normal axis is lerped from W
+	 * to -W over time -> spiral around the axis.
+	 * @param angle
+	 * @param t
+	 * @param X
+	 * @param lerpZ
+	 * @return 
+	 */
 	private Vector3f rotate2(float angle, float t, Vector3f X, boolean lerpZ) {
 		Vector3f W = project(X, N);
 		Vector3f U = X.subtract(W);
