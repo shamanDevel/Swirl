@@ -36,37 +36,92 @@ public class SwirlInterpolation implements Interpolation {
 		System.out.println(" rotation angle alpha=" + alpha + "  ( " + (alpha * 180 / Math.PI) + "° )");
 
 		//Calculate F
-		Vector3f lhs = new Vector3f(end.P);
-		Vector3f P0mP0N = new Vector3f(start.P);
-		P0mP0N.subtractLocal(project(start.P, N));
-		Vector3f lhsA = project(start.P, N);
-		Vector3f lhsB = new Vector3f(P0mP0N);
-		lhsB.multLocal((float) Math.cos(alpha));
-		Vector3f lhsC = P0mP0N.cross(N);
-		lhsC.multLocal((float) Math.sin(alpha));
-		lhsA.addLocal(lhsB);
-		lhsA.addLocal(lhsC);
-		lhsA.multLocal(m);
-		lhs.subtractLocal(lhsA);
-
-		double a = 1 - m * Math.cos(alpha);		// It's a kind of magic.
-		double b = m * (1 + Math.cos(alpha));	// It's a kind of magiiiic,
-		double c = -m * Math.sin(alpha);		// magic,
-		Matrix3f M = new Matrix3f();		// magic,
-		M.m00 = (float) (a + b * N.x * N.x);			//  M
-		M.m01 = (float) (b * N.x * N.y - c * N.z);		//  A
-		M.m02 = (float) (b * N.x * N.z + c * N.y);		//  A
-		M.m10 = (float) (b * N.y * N.x + c * N.z);		//  G
-		M.m11 = (float) (a + b * N.y * N.y);				//  I
-		M.m12 = (float) (b * N.y * N.z + c * N.y);		//  I
-		M.m20 = (float) (b * N.z * N.x - c * N.y);		//  I
-		M.m21 = (float) (b * N.z * N.y + c * N.x);		//  C
-		M.m22 = (float) (a + b * N.z * N.z);				//  !
-		F = solve(M, lhs);					// Guitar solo ...
+//		Vector3f lhs = new Vector3f(end.P);
+//		Vector3f P0projN = N.mult(start.P.dot(N));
+//		lhs.addScaleLocal(P0projN, m);
+//		lhs.addScaleLocal(P0projN.subtract(start.P), (float) (m*Math.cos(alpha)));
+//		lhs.addScaleLocal(N.cross(start.P), (float) (-m*Math.sin(alpha)));
+//		float a = (float) (1-m*Math.cos(alpha));
+//		float b = (float) (m+m*Math.cos(alpha));
+//		float c = (float) (m*Math.sin(alpha));
+//		Matrix3f M = new Matrix3f();
+//		M.m00 = a + b*N.x*N.x;
+//		M.m01 = b*N.y*N.x - c*N.z;
+//		M.m02 = b*N.z*N.x + c*N.y;
+//		M.m10 = b*N.x*N.y + c*N.z;
+//		M.m11 = a + b*N.y*N.y;
+//		M.m12 = b*N.z*N.y - c*N.x;
+//		M.m20 = b*N.x*N.z - c*N.y;
+//		M.m21 = b*N.y*N.z + c*N.x;
+//		M.m22 = a + b*N.z*N.z;
+//		F = solve(M, lhs);
+		
+		calcF();
+		
+		//Test
+		Vector3f test = new Vector3f();
+		test.addLocal(F);
+		test.addScaleLocal(project(start.P.subtract(F), N), -m);
+		test.addScaleLocal(start.P.subtract(F).subtract(project(start.P.subtract(F), N)), (float) (m*Math.cos(alpha)));
+		test.addScaleLocal(N.cross(start.P.subtract(F).subtract(project(start.P.subtract(F), N))), (float) (-m*Math.sin(alpha)));
+		System.out.println(" calculated P1=" + test+", expected P1="+end.P);
 
 		//System.out.println(" lhs="+lhs);
 		//System.out.println(" M="+M);
 		System.out.println(" rotation center F=" + F);
+	}
+	
+	private void calcF() {
+		double nx = N.x;
+		double ny = N.y;
+		double nz = N.z;
+		double ox = start.P.x;
+		double oy = start.P.y;
+		double oz = start.P.z;
+		double px = end.P.x;
+		double py = end.P.y;
+		double pz = end.P.z;
+		double cos = Math.cos(alpha);
+		double sin = Math.sin(alpha);
+		double s2a = Math.sin(alpha*2);
+		
+		double D = ((1+m*(nx*nx+ny*ny+nz*nz)+m*(-1+nx*nx+ny*ny*nz*nz)*cos)
+				* (1-2*m*cos+m*m*cos*cos+m*m*(nx*nx+ny*ny+nz*nz)*sin*sin));
+		
+		double fx = (m*nx*nx*ox + m*nx*ny*oy + m*nx*nz*oz + px + m*ny*ny*px + m*nz*nz*px - m*nx*ny*py - m*nx*nz*pz
+				+ m*m*((2+(-2+m)*nx*nx + (-1+m)*ny*ny-nz*nz+m*nz*nz)*ox - (-1+ny*ny+nz*nz)*px + nx*(ny*(-oy+py)+nz*(-oz+pz)))
+				* cos*cos + m*m*m*(-1+nx*nx+ny*ny+nz+nz)*ox*cos*cos*cos
+				+ m*m*(ny*ny*ox + nz*nz*ox + m*(nx*nx+ny*ny+nz*nz)*(nx*nx+ny*ny+nz*nz)*ox
+				- nx*nz*oz + nx*nx*px + nx*ny*(-oy+py) + nx+nz+pz)*sin*sin
+				+ m*cos*(-(1+(-1+2*m)*nx*nx + m*(ny*ny+nz*nz))*ox + nx+ny+oy - m*nx*ny*oy + nx*nz*oz - m*nx*nz*oz - 2*px
+				+ ny*ny*px - m*ny*ny*px + nz*nz*px - m*nz*nz*px - nx*ny*py + m*nx*ny*py - nx*nz*pz + m*nx*nz*pz + m*(-1+nx*nx+ny*ny+nz*nz)
+				*(nz*(-oy+py)+ny*(oz-pz))*sin + m*m*(-nx*nx+nx*nx*nx*nx-ny*ny+ny*ny*ny*ny-nz*nz+nz*nz*nz*nz)*ox+sin*sin)
+				+ m*sin*((1+m*(nx*nx+ny*ny+nz*nz))*(nz*(-oy+py)+ny*(oz-pz)) + m*m*(ny*ny*nz*nz + nx*nx*(ny*ny+nz*nz))*ox*s2a));
+		fx /= D;
+		
+		double fy = (m*nx*ny*ox + m*ny*ny*oy + m*ny*nz*oz - m*nx*ny*px + py + m*nx*nx*py - m*ny*nz*pz
+				+ m*m*((2+(-2+m)*ny*ny + (-1+m)*nz*nz)*oy - ny*nz*oz + nx*ny*(-ox+py)+nx*nx*((-1+m)*oy-py) + py - nz*nz*py + ny*nz*pz)
+				*cos*cos + m*m*m*(-1+nx*nx*ny*ny*nz*nz)*oy*cos*cos*cos
+				+ m*m*(m*nx*nx*nx*nx*oy + nz*nz*oy + m*(ny*ny+nz*nz)*(ny*ny+nz*nz)*oy  + nx*nx*(1+2*m*(ny*ny+nz*nz))*oy
+				- ny*nz*oz + nx*ny*(-ox+px) + ny*ny*py + ny*nz*pz) * sin*sin
+				+ m*cos*(-oy+ny*ny*oy - 2*m*ny*ny*oy - m*nz*nz*oy + ny*nz*oz -m*ny*nz*oz - (-1+m)*nx*ny*(ox-px) - 
+				2*py + nz*nz*py - m*nz*nz*py + nx*nx*(py-m*(oy+py)) - ny*nz*pz + m*ny*nz*pz + m*(-1+nx*nx+ny*ny*nz*nz)
+				*(nz*(ox-px) + nx*(-oz+pz))*sin + m*m*(-nx*nx+nx*nx*nx*nx-ny*ny+ny*ny*ny*ny-nz*nz+nz*nz*nz*nz)*oy*sin*sin)
+				+ m*sin*((1+m*(nx*nx+ny*ny+nz*nz))*(nz*(ox-px)+nx*(-oz+pz))+m*m*(ny*ny*nz*nz+nx*nx*(ny*ny+nz*nz))*oy*s2a));
+		fy /= D;
+		
+		double fz = (m*nx*nz*ox + m*ny*nz*oy + m*nz*nz*oz - m*nx*nz*px - m*ny*nz*py + pz + m*nx*nx*pz + m*ny*ny*pz
+				+ m*m*(2*oz - 2*nz*nz*oz + m*nz*nz*oz + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nx*nx*((-1+m)*oz-pz) 
+				+ ny*ny*((-1+m)*oz-pz)+pz)*cos*cos + m*m*m*(-1+nx*nx*ny*ny*nz*nz)*oz*cos*cos*cos
+				+ m*m*(m*nx*nx*nx*nx*oz + m*ny*ny*ny*ny*oz + nx*nx*(1+2*m*(ny*ny+nz*nz))*oz 
+				+ ny*ny*(oz+2*m*nz*nz*oz) + nx*nz*(-ox+px) + ny*nz*(-oy+py)+nz*nz*(m*nz*nz*oz+pz))*sin*sin
+				+ m*cos*(ny*nz*oy - m*ny*nz*oy - oz - m*ny*ny*oz + nz*nz*oz - 2*m*nz*nz*oz - (-1+m)*nx*nz*(ox-py)
+				- ny*nz*py + m*ny*nz*py - 2*pz + ny*ny*pz - m*ny*ny*pz + nx*nx*(pz-m*(oz+pz)) + m*(-1+nx*nx+ny*ny+nz*nz)
+				*(ny*(-ox+px)+nx*(oy-py))*sin + m*m*(-nx*nx + nx*nx*nx*nx - ny*ny + ny*ny*ny*ny - nz*nz + nz*nz*nz*nz)*oz*sin*sin)
+				+ m*sin*((1+m*(nx*nx+ny*ny+nz*nz))*(ny*(-ox+px)+nx*(oy-py)) + m*m*(ny*ny*nz*nz + nx*nx*(ny*ny+nz*nz))*oz*s2a));
+		fz /= D;
+		
+		F = new Vector3f((float) fx, (float) fy, (float) fz);
 	}
 
 	private boolean calcNAlpha() {
@@ -128,7 +183,7 @@ public class SwirlInterpolation implements Interpolation {
 
 	private Vector3f project(Vector3f X, Vector3f N) {
 		Vector3f v = new Vector3f(N);
-		v.multLocal(X.x * N.x + X.y * N.y + X.z * N.z);
+		v.multLocal(X.dot(N));
 		return v;
 	}
 
@@ -161,6 +216,10 @@ public class SwirlInterpolation implements Interpolation {
 		Matrix3f A3 = new Matrix3f(A);
 		A3.setColumn(2, b);
 		result.z = A3.determinant() / detA;
+		
+//		Vector3f test = A.mult(result);
+//		assert (test.equals(b));
+		
 		return result;
 	}
 
