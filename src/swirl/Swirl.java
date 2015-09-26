@@ -154,11 +154,11 @@ public class Swirl extends PApplet {
 	private void calculateAndShowFrames() {
 		if (recalculateFrames) {
 			recalculateFrames = false;
-			float interpolationStep = 1.0f / (interpolatingFramesCount+1);
+			//float interpolationStep = 1.0f / (interpolatingFramesCount+1);
+			float interpolationStep = 1.0f / (interpolatingFramesCount);
 			float extrapolationStep = extrapolatingFramesLength / extrapolatingFramesCount;
 			interpolation.setStartEnd(startFrame, endFrame);
 			for (int i=0; i<interpolatingFramesCount; ++i) {
-				//interpolation.interpolate((float) ((i)*step), middleFrames[i]);
 				interpolation.interpolate((i+1)*interpolationStep, interpolatingFrames[i]);
 			}
 			for (int i=0; i<extrapolatingFramesCount; ++i) {
