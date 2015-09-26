@@ -37,7 +37,7 @@ public class SwirlInterpolation2 implements Interpolation {
 	public void setStartEnd(Frame start, Frame end) {
 		this.start = start;
 		this.end = end;
-		System.out.println("Calculate Swirl P(t)=F+m^t*(P0-F)^(alpha*t, N)");
+		System.out.println("Calculate Swirl 2 P(t)=F+m^t*(P0-F)^(alpha*t, N)");
 		System.out.println(" Start frame: "+start);
 		System.out.println(" End frame: "+end);
 		
@@ -209,9 +209,9 @@ public class SwirlInterpolation2 implements Interpolation {
 		Vector3f projected = project(P.x, P.y, z, projI, projJ, N);
 		//move point
 		Vector3f translation = new Vector3f(N);
-		//double dz = z - N.dot(new Vector3f(start.P));
-		//translation.scale(t * zTranslation + (Math.pow(translationScale, t) - 1) * dz); //unsteady
-		translation.multLocal(t * zTranslation); //unsteady
+		double dz = z - N.dot(new Vector3f(start.P));
+		translation.multLocal((float) (t * zTranslation + (Math.pow(translationScale, t) - 1) * dz)); //unsteady
+//		translation.multLocal(t * zTranslation); //unsteady
 		projected.addLocal(translation);
 		
 		return projected;
@@ -244,4 +244,16 @@ public class SwirlInterpolation2 implements Interpolation {
 				 0.05f*Swirl.SCALE, 0.05f*Swirl.SCALE);
 		applet.popMatrix();
 	}
+
+	@Override
+	public String debugString() {
+		StringBuilder str = new StringBuilder();
+		str.append("Modified Swirl Interpolation: 2d log-spiral in the plane orthogonal to N + exponential translation along N\n");
+		str.append("rotation axis N=").append(N).append("\n");
+		str.append("spiral angle=").append(spiralAngle).append(" (").append(spiralAngle * 180 / Math.PI)
+				.append("°), spiral scale=").append(spiralScale).append(", spiral center=").append(spiralCenter).append("\n");
+		str.append("translation along N=").append(zTranslation).append(", translation scale=").append(translationScale);
+		return str.toString();
+	}
+	
 }

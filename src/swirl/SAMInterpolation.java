@@ -5,6 +5,7 @@
  */
 package swirl;
 
+import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -22,6 +23,7 @@ public class SAMInterpolation implements Interpolation {
 	private Matrix4f V = new Matrix4f();
 	private Matrix4f Vt = new Matrix4f();
 	private Matrix4f D = new Matrix4f();
+	private boolean solved = false;
 
 	@Override
 	public void setStartEnd(Frame start, Frame end) {
@@ -36,7 +38,14 @@ public class SAMInterpolation implements Interpolation {
 		//diagonalize
 		Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(4, 4);
 		copy(deltaA, matrix);
-		EigenDecomposition eigen = new EigenDecomposition(matrix);
+		EigenDecomposition eigen = null;
+		try {
+			eigen = new EigenDecomposition(matrix);
+		} catch (MathArithmeticException mathArithmeticException) {
+			solved = false;
+			return;
+		}
+		solved = true;
 		copy(eigen.getV(), V);
 		copy(eigen.getVT(), Vt);
 		copy(eigen.getD(), D);
@@ -79,6 +88,9 @@ public class SAMInterpolation implements Interpolation {
 
 	@Override
 	public void interpolate(float t, Frame toSet) {
+		if (!solved) {
+			return;
+		}
 		Matrix4f M = getPowerMatrix(t);
 		M.mult(startFrame.P, toSet.P);
 		M.mult(startFrame.P.add(startFrame.I), toSet.I);
@@ -92,6 +104,21 @@ public class SAMInterpolation implements Interpolation {
 
 	@Override
 	public void debugDraw(Swirl swirl) {
+	}
+
+	@Override
+	public String debugString() {
+		StringBuilder str = new StringBuilder();
+		str.append("SAM-Interpolation\n");
+		str.append("matrix between start and end frame:\n");
+		str.append(deltaA).append("\n");
+		if (solved) {
+			str.append("diagonalized matrix:\n");
+			str.append(D);
+		} else {
+			str.append("unable to diagonalize matrix!");
+		}
+		return str.toString();
 	}
 	
 }

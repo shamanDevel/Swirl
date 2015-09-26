@@ -38,13 +38,14 @@ public class Swirl extends PApplet {
 	private final float extrapolatingFramesLength = 5;
 	private final Frame[] extrapolatingFrames = new Frame[extrapolatingFramesCount];
 	private boolean recalculateFrames = false;
-	private Interpolation interpolation;
+	private int selectedInterpolation;
+	private Interpolation[] interpolations;
 	
 	private int pickedPoint = 0;
 
 	String title = "6491 P2 2015: 3D swirl", name = "Sebastian Weiß",
-			menu = "?:help, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit",
-			guide = "CURVES x/z:select&edit, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
+			menu = "1-4: change interpolation, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, a:anim, #:quit",
+			guide = "click'n'drag center of frames or arrow tips to change the start frame (green) and end frame (red)"; // user's guide
 
 	public void settings() {
 		size(900, 900, P3D); // p3D means that we will do 3D graphics
@@ -84,10 +85,13 @@ public class Swirl extends PApplet {
 			extrapolatingFrames[i] = new Frame();
 		}
 		
-//		interpolation = new LinearInterpolation();
-		interpolation = new SwirlInterpolation();
-//		interpolation = new SwirlInterpolation2();
-//		interpolation = new SAMInterpolation();
+		interpolations = new Interpolation[]{
+			new LinearInterpolation(),
+			new SwirlInterpolation(),
+			new SwirlInterpolation2(),
+			new SAMInterpolation()
+		};
+		selectedInterpolation = 1;
 		recalculateFrames = true;
 	}
 
@@ -111,7 +115,7 @@ public class Swirl extends PApplet {
 		computeProjectedVectors(); // computes screen projections I, J, K of basis vectors (see bottom of pv3D): used for dragging in viewer's frame    
 		
 		calculateAndShowFrames();
-		interpolation.debugDraw(this);
+		interpolations[selectedInterpolation].debugDraw(this);
 		
 		popMatrix(); // done with 3D drawing. Restore front view for writing text on canvas
 
@@ -154,8 +158,9 @@ public class Swirl extends PApplet {
 	private void calculateAndShowFrames() {
 		if (recalculateFrames) {
 			recalculateFrames = false;
-			//float interpolationStep = 1.0f / (interpolatingFramesCount+1);
-			float interpolationStep = 1.0f / (interpolatingFramesCount);
+			Interpolation interpolation = interpolations[selectedInterpolation];
+			float interpolationStep = 1.0f / (interpolatingFramesCount+1);
+//			float interpolationStep = 1.0f / (interpolatingFramesCount);
 			float extrapolationStep = extrapolatingFramesLength / extrapolatingFramesCount;
 			interpolation.setStartEnd(startFrame, endFrame);
 			for (int i=0; i<interpolatingFramesCount; ++i) {
@@ -176,6 +181,18 @@ public class Swirl extends PApplet {
 	}
 
 	public void keyPressed() {
+		if (key == '1') {
+			selectedInterpolation = 0; recalculateFrames = true;
+		} else if (key == '2' && interpolations.length >= 2) {
+			selectedInterpolation = 1; recalculateFrames = true;
+		} else if (key == '3' && interpolations.length >= 3) {
+			selectedInterpolation = 2; recalculateFrames = true;
+		} else if (key == '4' && interpolations.length >= 4) {
+			selectedInterpolation = 3; recalculateFrames = true;
+		} else if (key == '5' && interpolations.length >= 5) {
+			selectedInterpolation = 4; recalculateFrames = true; //unused
+		}
+		
 		if (key == '?') {
 			scribeText = !scribeText;
 		}
@@ -299,6 +316,7 @@ public class Swirl extends PApplet {
 // **** Header, footer, help text on canvas
 	private void displayHeader() { // Displays title and authors face on screen
 		scribeHeader(title, 0);
+		scribeHeader(interpolations[selectedInterpolation].debugString(), 1);
 		scribeHeaderRight(name);
 		fill(white);
 		image(myFace, width - myFace.width / 2, 25, myFace.width / 2, myFace.height / 2);

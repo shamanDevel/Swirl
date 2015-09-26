@@ -27,5 +27,10 @@ public class LinearInterpolation implements Interpolation {
 	@Override
 	public void debugDraw(Swirl swirl) {
 	}
+
+	@Override
+	public String debugString() {
+		return "Linear Interpolation";
+	}
 	
 }

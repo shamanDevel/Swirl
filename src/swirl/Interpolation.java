@@ -16,4 +16,6 @@ public interface Interpolation {
 	void interpolate(float t, Frame toSet);
 	
 	void debugDraw(Swirl swirl);
+	
+	String debugString();
 }

@@ -336,4 +336,14 @@ public class SwirlInterpolation implements Interpolation {
 		swirl.popMatrix();
 	}
 
+	@Override
+	public String debugString() {
+		StringBuilder str = new StringBuilder();
+		str.append("Swirl Interpolation P(t)=F+(m^t)*FPo^(alpha*t,N)\n");
+		str.append("scaling m=").append(m).append("\n");
+		str.append("rotation axis N=").append(N).append("\n");
+		str.append("rotation angle alpha=").append(alpha).append(" (").append(alpha * 180 / Math.PI).append("°)\n");
+		str.append("rotation center F=").append(F);
+		return str.toString();
+	}
 }
