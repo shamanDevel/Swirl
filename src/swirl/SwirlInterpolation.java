@@ -57,6 +57,7 @@ public class SwirlInterpolation implements Interpolation {
 //		F = solve(M, lhs);
 		
 		calcF();
+//		calcF2();
 		
 		//Test
 		Vector3f test = new Vector3f();
@@ -98,43 +99,74 @@ public class SwirlInterpolation implements Interpolation {
 		double cos3 = cos2*cos;
 		double sin2 = sin*sin;
 		
-		double D = ((1+m*Nsq+m*(-1+nx2+ny2*nz2)*cos)
-				* (1-2*m*cos+m2*cos2+m2*Nsq*sin2));
+		double D = ((1 + m*Nsq + m*(-1+Nsq)*cos)
+				* (1 - 2*m*cos + m2*cos2 + m2*Nsq*sin2));
 		
 		double fx = (m*nx2*ox + m*nx*ny*oy + m*nx*nz*oz + px + m*ny2*px + m*nz2*px - m*nx*ny*py - m*nx*nz*pz
-				+ m2*((2+(-2+m)*nx2 + (-1+m)*ny2-nz2+m*nz2)*ox - (-1+ny2+nz2)*px + nx*(ny*(-oy+py)+nz*(-oz+pz)))
-				* cos2 + m3*(-1+nx2+ny2+nz+nz)*ox*cos3
-				+ m2*(ny2*ox + nz2*ox + m*Nsq*Nsq*ox
-				- nx*nz*oz + nx2*px + nx*ny*(-oy+py) + nx+nz+pz)*sin2
-				+ m*cos*(-(1+(-1+2*m)*nx2 + m*(ny2+nz2))*ox + nx+ny+oy - m*nx*ny*oy + nx*nz*oz - m*nx*nz*oz - 2*px
+				+ m2*((2+(-2+m)*nx2 + (-1+m)*ny2 - nz2 + m*nz2)*ox - (-1+ny2+nz2)*px + nx*(ny*(-oy+py)+nz*(-oz+pz)))
+				* cos2 + m3*(-1+Nsq)*ox*cos3
+				+ m2*(ny2*ox + nz2*ox + m*Nsq*Nsq*ox - nx*nz*oz + nx2*px + nx*ny*(-oy+py) + nx*nz*pz)*sin2
+				+ m*cos*(-(1+(-1+2*m)*nx2 + m*(ny2+nz2))*ox + nx*ny*oy - m*nx*ny*oy + nx*nz*oz - m*nx*nz*oz - 2*px
 				+ ny2*px - m*ny2*px + nz2*px - m*nz2*px - nx*ny*py + m*nx*ny*py - nx*nz*pz + m*nx*nz*pz + m*(-1+Nsq)
-				*(nz*(-oy+py)+ny*(oz-pz))*sin + m2*Nsqsq*ox+sin2)
+				*(nz*(-oy+py)+ny*(oz-pz))*sin + m2*Nsqsq*ox*sin2)
 				+ m*sin*((1+m*Nsq)*(nz*(-oy+py)+ny*(oz-pz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*ox*s2a));
 		fx /= D;
 		
-		double fy = (m*nx*ny*ox + m*ny2*oy + m*ny*nz*oz - m*nx*ny*px + py + m*nx2*py - m*ny*nz*pz
-				+ m2*((2+(-2+m)*ny2 + (-1+m)*nz2)*oy - ny*nz*oz + nx*ny*(-ox+py)+nx2*((-1+m)*oy-py) + py - nz2*py + ny*nz*pz)
-				*cos2 + m3*(-1+nx2*ny2*nz2)*oy*cos3
+		double fy = (m*nx*ny*ox + m*ny2*oy + m*ny*nz*oz - m*nx*ny*px + py + m*nx2*py + m*nz2*py - m*ny*nz*pz
+				+ m2*((2+(-2+m)*ny2 + (-1+m)*nz2)*oy - ny*nz*oz + nx*ny*(-ox+px)+nx2*((-1+m)*oy-py) + py - nz2*py + ny*nz*pz)
+				*cos2 + m3*(-1+Nsq)*oy*cos3
 				+ m2*(m*nx4*oy + nz2*oy + m*(ny2+nz2)*(ny2+nz2)*oy  + nx2*(1+2*m*(ny2+nz2))*oy
 				- ny*nz*oz + nx*ny*(-ox+px) + ny2*py + ny*nz*pz) * sin2
-				+ m*cos*(-oy+ny2*oy - 2*m*ny2*oy - m*nz2*oy + ny*nz*oz -m*ny*nz*oz - (-1+m)*nx*ny*(ox-px) - 
-				2*py + nz2*py - m*nz2*py + nx2*(py-m*(oy+py)) - ny*nz*pz + m*ny*nz*pz + m*(-1+nx2+ny2*nz2)
+				+ m*cos*(-oy + ny2*oy - 2*m*ny2*oy - m*nz2*oy + ny*nz*oz - m*ny*nz*oz - (-1+m)*nx*ny*(ox-px) - 
+				2*py + nz2*py - m*nz2*py + nx2*(py-m*(oy+py)) - ny*nz*pz + m*ny*nz*pz + m*(-1+Nsq)
 				*(nz*(ox-px) + nx*(-oz+pz))*sin + m2*Nsqsq*oy*sin2)
-				+ m*sin*((1+m*Nsq)*(nz*(ox-px)+nx*(-oz+pz))+m2*(ny2*nz2+nx2*(ny2+nz2))*oy*s2a));
+				+ m*sin*((1+m*Nsq)*(nz*(ox-px) + nx*(-oz+pz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oy*s2a));
 		fy /= D;
 		
 		double fz = (m*nx*nz*ox + m*ny*nz*oy + m*nz2*oz - m*nx*nz*px - m*ny*nz*py + pz + m*nx2*pz + m*ny2*pz
-				+ m2*(2*oz - 2*nz2*oz + m*nz2*oz + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nx2*((-1+m)*oz-pz) 
-				+ ny2*((-1+m)*oz-pz)+pz)*cos2 + m3*(-1+nx2*ny2*nz2)*oz*cos3
-				+ m2*(m*nx4*oz + m*ny4*oz + nx2*(1+2*m*(ny2+nz2))*oz 
-				+ ny2*(oz+2*m*nz2*oz) + nx*nz*(-ox+px) + ny*nz*(-oy+py)+nz2*(m*nz2*oz+pz))*sin2
-				+ m*cos*(ny*nz*oy - m*ny*nz*oy - oz - m*ny2*oz + nz2*oz - 2*m*nz2*oz - (-1+m)*nx*nz*(ox-py)
-				- ny*nz*py + m*ny*nz*py - 2*pz + ny2*pz - m*ny2*pz + nx2*(pz-m*(oz+pz)) + m*(-1+Nsq)
-				*(ny*(-ox+px)+nx*(oy-py))*sin + m2*Nsqsq*oz*sin2)
-				+ m*sin*((1+m*Nsq)*(ny*(-ox+px)+nx*(oy-py)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oz*s2a));
+				+ m2*(2*oz - 2*nz2*oz + m*nz2*oz + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nx2*((-1+m)*oz-pz) + ny2*((-1+m)*oz - pz) + pz)
+				*cos2 + m3*(-1+Nsq)*oz*cos3	+ m2*(m*nx4*oz + m*ny4*oz + nx2*(1 + 2*m*(ny2+nz2))*oz 
+				+ ny2*(oz+2*m*nz2*oz) + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nz2*(m*nz2*oz + pz))*sin2
+				+ m*cos*(ny*nz*oy - m*ny*nz*oy - oz - m*ny2*oz + nz2*oz - 2*m*nz2*oz - (-1+m)*nx*nz*(ox-px)
+				- ny*nz*py + m*ny*nz*py - 2*pz + ny2*pz - m*ny2*pz + nx2*(pz - m*(oz+pz)) + m*(-1+Nsq)
+				*(ny*(-ox+px) + nx*(oy-py))*sin + m2*Nsqsq*oz*sin2)	+ m*sin
+				*((1+m*Nsq)*(ny*(-ox+px) + nx*(oy-py)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oz*s2a));
 		fz /= D;
 		
 		F = new Vector3f((float) fx, (float) fy, (float) fz);
+	}
+	
+	private void calcF2() {
+		//Create basis I,J,K
+		Vector3f I = projectOnPlane(start.I.normalize(), N).normalizeLocal();
+		Vector3f J = N.cross(I);
+		
+		Vector2f A = new Vector2f(start.P.dot(I), start.P.dot(J));
+//		Vector2f B = new Vector2f((start.P.add(start.I)).dot(I), (start.P.add(start.I)).dot(J));
+		Vector2f C = new Vector2f(end.P.dot(I), end.P.dot(J));
+//		Vector2f D = new Vector2f((end.P.add(end.I)).dot(I), (end.P.add(end.I)).dot(J));
+//		Vector2f AB = B.subtract(A);
+//		Vector2f CD = D.subtract(C);
+//		float alpha2d = AB.normalize().angleBetween(CD.normalize());
+//		float scale2d = CD.length() / AB.length();
+//		Vector2f center = spiralCenter(alpha2d, scale2d, A, C);
+		Vector2f center = spiralCenter(alpha, m, A, C);
+		
+		float z = (start.P.dot(N) + end.P.dot(N)) / 2;
+		F = new Vector3f();
+		F.addScaleLocal(I, center.x);
+		F.addScaleLocal(J, center.y);
+		F.addScaleLocal(N, z);
+	}
+	private static final float sq(float x) {return x*x;}
+	private Vector2f spiralCenter(float a, float z, Vector2f A, Vector2f C) {
+		float c = (float) Math.cos(a), s = (float) Math.sin(a);
+		float D = sq(c * z - 1) + sq(s * z);
+		float ex = c * z * A.x - C.x - s * z * A.y;
+		float ey = c * z * A.y - C.y + s * z * A.x;
+		float x = (ex * (c * z - 1) + ey * s * z) / D;
+		float y = (ey * (c * z - 1) - ex * s * z) / D;
+		return new Vector2f(x, y);
 	}
 
 	private boolean calcNAlpha() {
