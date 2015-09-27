@@ -18,17 +18,21 @@ public class Swirl extends PApplet {
 	public static final float SCALE = 50;
 	private static final float PICK_TOLERANCE = 20;
 	public static final float DEG_TO_RAD = PI / 180.0f;
+	private static final float FPS = 60;
 
-	float dz = 0; // distance to camera. Manipulated with wheel or when 
+	private float dz = 0; // distance to camera. Manipulated with wheel or when 
 //float rx=-0.06*TWO_PI, ry=-0.04*TWO_PI;    // view angles manipulated when space pressed but not mouse
-	float rx = 0, ry = 0;    // view angles manipulated when space pressed but not mouse
-	Boolean twistFree = false, animating = true, tracking = false, center = true, gouraud = true, showControlPolygon = false, showNormals = false;
-	float t = 0, s = 0;
-	boolean viewpoint = false;
-	PImage myFace;
-	boolean filming = false;
-	boolean change = false;
-	int frameCounter = 0;
+	private float rx = 0, ry = 0;    // view angles manipulated when space pressed but not mouse
+	private  boolean animating = false, tracking = false, center = true, gouraud = true, showControlPolygon = false, showNormals = false;
+	private float t = 0, s = 0;
+	private boolean viewpoint = false;
+	private PImage myFace;
+	private boolean filming = false;
+	private boolean change = false;
+	private int frameCounter = 0;
+	
+	private long time1, time2;
+	private float tpf;
 	
 	private final Frame startFrame = new Frame();
 	private final Frame endFrame = new Frame();
@@ -37,6 +41,7 @@ public class Swirl extends PApplet {
 	private final int extrapolatingFramesCount = 50;
 	private final float extrapolatingFramesLength = 5;
 	private final Frame[] extrapolatingFrames = new Frame[extrapolatingFramesCount];
+	private final Frame animatingFrame = new Frame();
 	private boolean recalculateFrames = false;
 	private int selectedInterpolation;
 	private Interpolation[] interpolations;
@@ -53,6 +58,8 @@ public class Swirl extends PApplet {
 	}
 
 	public void setup() {
+		frameRate(FPS);
+		
 		myFace = loadImage("data/pic.jpg");  // load image from file pic.jpg in folder data *** replace that file with your pic of your own face
 		textureMode(NORMAL);
 		
@@ -96,9 +103,16 @@ public class Swirl extends PApplet {
 		
 		rx+=0.0001f;
 		ry+=0.0001f;
+		
+		time1 = System.currentTimeMillis();
+		time2 = System.currentTimeMillis();
 	}
 
 	public void draw() {
+		time1 = System.currentTimeMillis();
+		tpf = (time1 - time2) / 1000f;
+		time2 = time1;
+		
 		background(255);
 		pushMatrix();   // to ensure that we can restore the standard view before writing on the canvas
 
@@ -129,13 +143,6 @@ public class Swirl extends PApplet {
 		if (!filming) {
 			displayFooter(); // shows menu at bottom, only if not filming
 		}
-		if (animating) {
-			t += PI / 180 / 2;
-			if (t >= TWO_PI) {
-				t = 0;
-			}
-			s = (float) ((cos(t) + 1.) / 2);
-		} // periodic change of time 
 		if (filming && (animating || change)) {
 			saveFrame("FRAMES/F" + nf(frameCounter++, 4) + ".tif");  // save next frame to make a movie
 		}
@@ -159,9 +166,9 @@ public class Swirl extends PApplet {
 	}
 	
 	private void calculateAndShowFrames() {
+		Interpolation interpolation = interpolations[selectedInterpolation];
 		if (recalculateFrames) {
 			recalculateFrames = false;
-			Interpolation interpolation = interpolations[selectedInterpolation];
 			float interpolationStep = 1.0f / (interpolatingFramesCount+1);
 //			float interpolationStep = 1.0f / (interpolatingFramesCount);
 			float extrapolationStep = extrapolatingFramesLength / extrapolatingFramesCount;
@@ -181,6 +188,15 @@ public class Swirl extends PApplet {
 		for (int i=0; i<extrapolatingFramesCount; ++i) {
 			showFrame(extrapolatingFrames[i], blue50);
 		}
+		if (animating) {
+			t += tpf * 0.7f;
+			s = (float) Math.pow(2, t)-1;
+			if (s > 1+extrapolatingFramesLength) {
+				t=0; s=0;
+			}
+			interpolation.interpolate(s, animatingFrame);
+			showFrame(animatingFrame, black);
+		} // periodic change of time 
 	}
 
 	public void keyPressed() {
@@ -221,6 +237,7 @@ public class Swirl extends PApplet {
 		}
 		if (key == 'a') {
 			animating = !animating; // toggle animation
+			t = 0;
 		}
 		if (key == ',') {
 			viewpoint = !viewpoint;
