@@ -93,6 +93,9 @@ public class Swirl extends PApplet {
 		};
 		selectedInterpolation = 1;
 		recalculateFrames = true;
+		
+		rx+=0.0001f;
+		ry+=0.0001f;
 	}
 
 	public void draw() {

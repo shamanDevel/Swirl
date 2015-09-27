@@ -30,12 +30,18 @@ public class SwirlInterpolation implements Interpolation {
 
 		//Calculate N and alpha
 		calcNAlpha();
+		//calculate F
+		calcF();
+		//Check if the rotation axis N is flipped
+		if (checkForAxisFlipped()) {
+			System.out.println("flip N");
+			N.negateLocal();
+			calcF();
+		}
 
 		System.out.println(" scaling m=" + m);
 		System.out.println(" rotation axis N=" + N);
 		System.out.println(" rotation angle alpha=" + alpha + "  ( " + (alpha * 180 / Math.PI) + "° )");
-		
-		calcF();
 		
 		//Test
 		Vector3f test = new Vector3f();
@@ -77,38 +83,38 @@ public class SwirlInterpolation implements Interpolation {
 		double cos3 = cos2*cos;
 		double sin2 = sin*sin;
 		
-		double D = ((1 + m*Nsq + m*(-1+Nsq)*cos)
+		double D = ((1 + m*Nsq + m*(Nsq-1)*cos)
 				* (1 - 2*m*cos + m2*cos2 + m2*Nsq*sin2));
 		
 		double fx = (m*nx2*ox + m*nx*ny*oy + m*nx*nz*oz + px + m*ny2*px + m*nz2*px - m*nx*ny*py - m*nx*nz*pz
-				+ m2*((2+(-2+m)*nx2 + (-1+m)*ny2 - nz2 + m*nz2)*ox - (-1+ny2+nz2)*px + nx*(ny*(-oy+py)+nz*(-oz+pz)))
-				* cos2 + m3*(-1+Nsq)*ox*cos3
-				+ m2*(ny2*ox + nz2*ox + m*Nsq*Nsq*ox - nx*nz*oz + nx2*px + nx*ny*(-oy+py) + nx*nz*pz)*sin2
-				+ m*cos*(-(1+(-1+2*m)*nx2 + m*(ny2+nz2))*ox + nx*ny*oy - m*nx*ny*oy + nx*nz*oz - m*nx*nz*oz - 2*px
-				+ ny2*px - m*ny2*px + nz2*px - m*nz2*px - nx*ny*py + m*nx*ny*py - nx*nz*pz + m*nx*nz*pz + m*(-1+Nsq)
-				*(nz*(-oy+py)+ny*(oz-pz))*sin + m2*Nsqsq*ox*sin2)
-				+ m*sin*((1+m*Nsq)*(nz*(-oy+py)+ny*(oz-pz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*ox*s2a));
+				+ m2*((2+(m-2)*nx2 + (m-1)*ny2 - nz2 + m*nz2)*ox - (ny2+nz2-1)*px + nx*(ny*(py-oy)+nz*(pz-oz)))
+				* cos2 + m3*(Nsq-1)*ox*cos3
+				+ m2*(ny2*ox + nz2*ox + m*Nsq*Nsq*ox - nx*nz*oz + nx2*px + nx*ny*(py-oy) + nx*nz*pz)*sin2
+				+ m*cos*(-(1+(2*m-1)*nx2 + m*(ny2+nz2))*ox + nx*ny*oy - m*nx*ny*oy + nx*nz*oz - m*nx*nz*oz - 2*px
+				+ ny2*px - m*ny2*px + nz2*px - m*nz2*px - nx*ny*py + m*nx*ny*py - nx*nz*pz + m*nx*nz*pz + m*(Nsq-1)
+				*(nz*(py-oy)+ny*(oz-pz))*sin + m2*Nsqsq*ox*sin2)
+				+ m*sin*((1+m*Nsq)*(nz*(py-oy)+ny*(oz-pz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*ox*s2a));
 		fx /= D;
 		
 		double fy = (m*nx*ny*ox + m*ny2*oy + m*ny*nz*oz - m*nx*ny*px + py + m*nx2*py + m*nz2*py - m*ny*nz*pz
-				+ m2*((2+(-2+m)*ny2 + (-1+m)*nz2)*oy - ny*nz*oz + nx*ny*(-ox+px)+nx2*((-1+m)*oy-py) + py - nz2*py + ny*nz*pz)
-				*cos2 + m3*(-1+Nsq)*oy*cos3
+				+ m2*((2+(m-2)*ny2 + (m-1)*nz2)*oy - ny*nz*oz + nx*ny*(px-ox)+nx2*((m-1)*oy-py) + py - nz2*py + ny*nz*pz)
+				*cos2 + m3*(Nsq-1)*oy*cos3
 				+ m2*(m*nx4*oy + nz2*oy + m*(ny2+nz2)*(ny2+nz2)*oy  + nx2*(1+2*m*(ny2+nz2))*oy
-				- ny*nz*oz + nx*ny*(-ox+px) + ny2*py + ny*nz*pz) * sin2
-				+ m*cos*(-oy + ny2*oy - 2*m*ny2*oy - m*nz2*oy + ny*nz*oz - m*ny*nz*oz - (-1+m)*nx*ny*(ox-px) - 
-				2*py + nz2*py - m*nz2*py + nx2*(py-m*(oy+py)) - ny*nz*pz + m*ny*nz*pz + m*(-1+Nsq)
-				*(nz*(ox-px) + nx*(-oz+pz))*sin + m2*Nsqsq*oy*sin2)
-				+ m*sin*((1+m*Nsq)*(nz*(ox-px) + nx*(-oz+pz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oy*s2a));
+				- ny*nz*oz + nx*ny*(px-ox) + ny2*py + ny*nz*pz) * sin2
+				+ m*cos*(-oy + ny2*oy - 2*m*ny2*oy - m*nz2*oy + ny*nz*oz - m*ny*nz*oz - (m-1)*nx*ny*(ox-px) - 
+				2*py + nz2*py - m*nz2*py + nx2*(py-m*(oy+py)) - ny*nz*pz + m*ny*nz*pz + m*(Nsq-1)
+				*(nz*(ox-px) + nx*(pz-oz))*sin + m2*Nsqsq*oy*sin2)
+				+ m*sin*((1+m*Nsq)*(nz*(ox-px) + nx*(pz-oz)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oy*s2a));
 		fy /= D;
 		
 		double fz = (m*nx*nz*ox + m*ny*nz*oy + m*nz2*oz - m*nx*nz*px - m*ny*nz*py + pz + m*nx2*pz + m*ny2*pz
-				+ m2*(2*oz - 2*nz2*oz + m*nz2*oz + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nx2*((-1+m)*oz-pz) + ny2*((-1+m)*oz - pz) + pz)
-				*cos2 + m3*(-1+Nsq)*oz*cos3	+ m2*(m*nx4*oz + m*ny4*oz + nx2*(1 + 2*m*(ny2+nz2))*oz 
-				+ ny2*(oz+2*m*nz2*oz) + nx*nz*(-ox+px) + ny*nz*(-oy+py) + nz2*(m*nz2*oz + pz))*sin2
-				+ m*cos*(ny*nz*oy - m*ny*nz*oy - oz - m*ny2*oz + nz2*oz - 2*m*nz2*oz - (-1+m)*nx*nz*(ox-px)
-				- ny*nz*py + m*ny*nz*py - 2*pz + ny2*pz - m*ny2*pz + nx2*(pz - m*(oz+pz)) + m*(-1+Nsq)
-				*(ny*(-ox+px) + nx*(oy-py))*sin + m2*Nsqsq*oz*sin2)	+ m*sin
-				*((1+m*Nsq)*(ny*(-ox+px) + nx*(oy-py)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oz*s2a));
+				+ m2*(2*oz - 2*nz2*oz + m*nz2*oz + nx*nz*(px-ox) + ny*nz*(py-oy) + nx2*((m-1)*oz-pz) + ny2*((m-1)*oz - pz) + pz)
+				*cos2 + m3*(Nsq-1)*oz*cos3	+ m2*(m*nx4*oz + m*ny4*oz + nx2*(1 + 2*m*(ny2+nz2))*oz 
+				+ ny2*(oz+2*m*nz2*oz) + nx*nz*(px-ox) + ny*nz*(py-oy) + nz2*(m*nz2*oz + pz))*sin2
+				+ m*cos*(ny*nz*oy - m*ny*nz*oy - oz - m*ny2*oz + nz2*oz - 2*m*nz2*oz - (m-1)*nx*nz*(ox-px)
+				- ny*nz*py + m*ny*nz*py - 2*pz + ny2*pz - m*ny2*pz + nx2*(pz - m*(oz+pz)) + m*(Nsq-1)
+				*(ny*(px-ox) + nx*(oy-py))*sin + m2*Nsqsq*oz*sin2)	+ m*sin
+				*((1+m*Nsq)*(ny*(px-ox) + nx*(oy-py)) + m2*(ny2*nz2 + nx2*(ny2+nz2))*oz*s2a));
 		fz /= D;
 		
 		F = new Vector3f((float) fx, (float) fy, (float) fz);
@@ -134,6 +140,21 @@ public class SwirlInterpolation implements Interpolation {
 		float l3 = N3.lengthSquared();
 		System.out.println("N1=" + N1 + "  N2=" + N2 + "  N3=" + N3);
 		System.out.println("N1=" + N1.normalize() + "  N2=" + N2.normalize() + "  N3=" + N3.normalize() + "  (vectors normalized)");
+		
+//		//normalize signs
+//		int sign1 = ((int) Math.signum(N1.x)) + ((int) Math.signum(N1.y)) + ((int) Math.signum(N1.z));
+//		int sign2 = ((int) Math.signum(N2.x)) + ((int) Math.signum(N2.y)) + ((int) Math.signum(N2.z));
+//		int sign3 = ((int) Math.signum(N3.x)) + ((int) Math.signum(N3.y)) + ((int) Math.signum(N3.z));
+//		int sign = sign1 + sign2 + sign3;
+//		if ((sign>0 && sign1<0) || (sign<0 && sign1>0)) {
+//			N1.negateLocal();
+//		}
+//		if ((sign>0 && sign2<0) || (sign<0 && sign2>0)) {
+//			N2.negateLocal();
+//		}
+//		if ((sign>0 && sign3<0) || (sign<0 && sign3>0)) {
+//			N3.negateLocal();
+//		}
 
 		//use vector with the greatest magnitude
 		if (l1 < EPSILON && l2 < EPSILON && l3 < EPSILON) {
@@ -213,6 +234,41 @@ public class SwirlInterpolation implements Interpolation {
 		return result;
 	}
 
+	/**
+	 * It can happen that the normal axis gets reversed and therefore the whole
+	 * frame is reversed as well. Check this.
+	 * @return {@code true} if the normal axis is flipped
+	 */
+	private boolean checkForAxisFlipped() {
+		Vector3f v = new Vector3f();
+		
+		Vector3f refP = new Vector3f();
+		interpolate(1, start.P, refP, false);
+		
+		Vector3f tmp = start.P.add(start.I);
+		interpolate(1, tmp, v, false);
+		v.subtractLocal(refP);
+		if (!v.equals(end.I)) { //includes an epsilon
+			return true;
+		}
+
+		tmp = start.P.add(start.J);
+		interpolate(1, tmp, v, false);
+		v.subtractLocal(refP);
+		if (!v.equals(end.J)) { //includes an epsilon
+			return true;
+		}
+		
+		tmp = start.P.add(start.K);
+		interpolate(1, tmp, v, false);
+		v.subtractLocal(refP);
+		if (!v.equals(end.K)) { //includes an epsilon
+			return true;
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public void interpolate(float t, Frame toSet) {
 		interpolate(t, start.P, toSet.P, true);
