@@ -44,7 +44,7 @@ public class SwirlInterpolationTest {
 		quat.multLocal(endFrame.J);
 		quat.multLocal(endFrame.K);
 		
-		SwirlInterpolation i = new SwirlInterpolation();
+		SwirlInterpolation2 i = new SwirlInterpolation2();
 		assertValidFrames(i, startFrame, endFrame);
 		assertSteadyMotion(i, startFrame, endFrame);
 	}

@@ -96,6 +96,7 @@ public class Swirl extends PApplet {
 			new LinearInterpolation(),
 			new SwirlInterpolation(),
 			new SwirlInterpolation2(),
+			new SwirlInterpolation3(),
 			new SAMInterpolation()
 		};
 		selectedInterpolation = 1;
