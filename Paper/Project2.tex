@@ -46,12 +46,13 @@
 We are provided with the starting and ending frame pair, call them $A_0$ and $A_1$.  We wish to create a continuous, affine and steady motion which interpolates $A_0$ and $A_1$.
  
 \section{Input}
-We are provided with two frames $A_0$ and $A_1$, each consisting of a point P and a right hand coordinate system of orthogonal vectors I, J, and K, each of the same length.
+Assume $A_0$ and $A_1$ consist of a point P and a right hand coordinate system of orthogonal vectors I, J, and K, each of the same length.
 \subsection{Terms} 
 1. An \underline{affine} transformation in three dimensions can be expressed as a 4x4 matrix multiplied onto a point or a vector, is reversible, and can be expressed solely as a combination of rotation, translation, and scaling.
 \newline
 2. A \underline{continuous} transformation is one in which for any $\epsilon > 0$, there exists a $\delta > 0$ such that for any $0 <= t, u <= 1$, if $t - u < \delta$, then for any point x, $(A_u - A_t)x < \epsilon$.  Intuitively, this means I can draw the motion with a pen in a single stroke.
-3. \underline{steady}...preserves angles, from time t to time t+1 is independent of t. 
+\newline
+3. A \underline{steady} transformation preserves the angle between a pair of frames, and is independent of some time t. 
 
 \section{Related interpolation schemes}
 
@@ -73,8 +74,8 @@ We wish to create a swirling motion related to the logarithmic spiral but in 3D.
 
 
 \subsection{Calculating $N$, $\alpha$ and $m$}
-We calculate m just like we did in "Logarithmic Spiral in 2D", $m = (I_1).length / (I_0).length$ (since I, J, and K are of the same length, it does not matter which we use).  Then, $dI = I_1 - I_0$, $dJ = J_1 - J_0$, and $dK = K_1 - K_0|$.  Then, $N = \max{(|dI\text{ x }dJ|, |dI*dK|, |dJ*dK|)}$ (this is length, we want the actual vector) where $x$ represents cross product.  
-$pI0 = (I_0\bullet N)N$, $pI1 = (I_1.N)N$, $pJ0 = (J_0.N)N$, $pJ1 = (J_1.N)N$, $pK0 = (K_0.N)N$, $pK1 = (K_1.N)N$.  Let $angle1$ denote the angle between $pI0$ and $pI1$, $angle2$ denote the angle between $pJ0$ and $pJ1$, and $angle3$ denote the angle between $pK0$ and $pK1$.  Then, $\alpha = \max{(angle1, angle2, angle3)}$. 
+We calculate m just like we did in "Logarithmic Spiral in 2D", $m = (I_1).length / (I_0).length$ (since I, J, and K are of the same length, it does not matter which we use).  Then, $dI = I_1 - I_0$, $dJ = J_1 - J_0$, and $dK = K_1 - K_0$.  Then, we want to pick $N = dI\text{ x }dJ$ or $N = dI\text{ x }dK$ or $N = dJ\text{ x }dK$ depending on $\max{(|dI\text{ x }dJ|, |dI\text{ x  }dK|, |dJ\text{ x }dK|)}$.  
+Let $pI0 = (I_0 \bullet N)N$, $pI1 = (I_1 \bullet N)N$, $pJ0 = (J_0 \bullet N)N$, $pJ1 = (J_1 \bullet N)N$, $pK0 = (K_0 \bullet N)N$, $pK1 = (K_1 \bullet N)N$.  Let $angle1$ denote the angle between $pI0$ and $pI1$, $angle2$ denote the angle between $pJ0$ and $pJ1$, and $angle3$ denote the angle between $pK0$ and $pK1$.  Then, $\alpha = \max{(angle1, angle2, angle3)}$. 
 
 \subsection{Calculating $F$}
 
