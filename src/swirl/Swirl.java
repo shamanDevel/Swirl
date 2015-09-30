@@ -24,12 +24,15 @@ public class Swirl extends PApplet {
 //float rx=-0.06*TWO_PI, ry=-0.04*TWO_PI;    // view angles manipulated when space pressed but not mouse
 	private float rx = 0, ry = 0;    // view angles manipulated when space pressed but not mouse
 	private  boolean animating = false, tracking = false, center = true, gouraud = true, showControlPolygon = false, showNormals = false;
+	private boolean showExtrapolating = true;
+	private boolean showDebug = true;
 	private float t = 0, s = 0;
 	private boolean viewpoint = false;
 	private PImage myFace;
-	private boolean filming = false;
+	private boolean filming = false, takePicture = false;
 	private boolean change = false;
 	private int frameCounter = 0;
+	private int pictureCounter = 0;
 	
 	private long time1, time2;
 	private float tpf;
@@ -38,9 +41,12 @@ public class Swirl extends PApplet {
 	private final Frame endFrame = new Frame();
 	private final int interpolatingFramesCount = 10;
 	private final Frame[] interpolatingFrames = new Frame[interpolatingFramesCount];
-	private final int extrapolatingFramesCount = 50;
-	private final float extrapolatingFramesLength = 5;
-	private final Frame[] extrapolatingFrames = new Frame[extrapolatingFramesCount];
+	private final int extrapolatingFramesCount1 = 50;
+	private final float extrapolatingFramesLength1 = 5;
+	private final Frame[] extrapolatingFrames1 = new Frame[extrapolatingFramesCount1];
+	private final int extrapolatingFramesCount2 = 50;
+	private final float extrapolatingFramesLength2 = 5;
+	private final Frame[] extrapolatingFrames2 = new Frame[extrapolatingFramesCount2];
 	private final Frame animatingFrame = new Frame();
 	private boolean recalculateFrames = false;
 	private int selectedInterpolation;
@@ -49,7 +55,7 @@ public class Swirl extends PApplet {
 	private int pickedPoint = 0;
 
 	String title = "6491 P2 2015: 3D swirl", name = "Sebastian Weiß, Kristian Eberhardson",
-			menu = "1-4: change interpolation, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, a:anim, #:quit",
+			menu = "1-4: change interpolation, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, a:anim, e:show extrapolating, d:show debug, #:quit",
 			guide = "click'n'drag center of frames or arrow tips to change the start frame (green) and end frame (red)"; // user's guide
 
 	public void settings() {
@@ -88,8 +94,11 @@ public class Swirl extends PApplet {
 		for (int i=0; i<interpolatingFramesCount; ++i) {
 			interpolatingFrames[i] = new Frame();
 		}
-		for (int i=0; i<extrapolatingFramesCount; ++i) {
-			extrapolatingFrames[i] = new Frame();
+		for (int i=0; i<extrapolatingFramesCount1; ++i) {
+			extrapolatingFrames1[i] = new Frame();
+		}
+		for (int i=0; i<extrapolatingFramesCount2; ++i) {
+			extrapolatingFrames2[i] = new Frame();
 		}
 		
 		interpolations = new Interpolation[]{
@@ -133,7 +142,9 @@ public class Swirl extends PApplet {
 		computeProjectedVectors(); // computes screen projections I, J, K of basis vectors (see bottom of pv3D): used for dragging in viewer's frame    
 		
 		calculateAndShowFrames();
-		interpolations[selectedInterpolation].debugDraw(this);
+		if (showDebug) {
+			interpolations[selectedInterpolation].debugDraw(this);
+		}
 		
 		popMatrix(); // done with 3D drawing. Restore front view for writing text on canvas
 
@@ -146,6 +157,10 @@ public class Swirl extends PApplet {
 		}
 		if (filming && (animating || change)) {
 			saveFrame("FRAMES/F" + nf(frameCounter++, 4) + ".tif");  // save next frame to make a movie
+		}
+		if (takePicture) {
+			takePicture = false;
+			saveFrame("FRAMES/P" + nf(pictureCounter++, 4) + ".tif");
 		}
 		change = false; // to avoid capturing frames when nothing happens (change is set uppn action)
 	}
@@ -172,13 +187,17 @@ public class Swirl extends PApplet {
 			recalculateFrames = false;
 			float interpolationStep = 1.0f / (interpolatingFramesCount+1);
 //			float interpolationStep = 1.0f / (interpolatingFramesCount);
-			float extrapolationStep = extrapolatingFramesLength / extrapolatingFramesCount;
+			float extrapolationStep1 = extrapolatingFramesLength1 / extrapolatingFramesCount1;
+			float extrapolationStep2 = extrapolatingFramesLength2 / extrapolatingFramesCount2;
 			interpolation.setStartEnd(startFrame, endFrame);
 			for (int i=0; i<interpolatingFramesCount; ++i) {
 				interpolation.interpolate((i+1)*interpolationStep, interpolatingFrames[i]);
 			}
-			for (int i=0; i<extrapolatingFramesCount; ++i) {
-				interpolation.interpolate((i+1)*extrapolationStep + 1, extrapolatingFrames[i]);
+			for (int i=0; i<extrapolatingFramesCount1; ++i) {
+				interpolation.interpolate((i+1)*extrapolationStep1 + 1, extrapolatingFrames1[i]);
+			}
+			for (int i=0; i<extrapolatingFramesCount2; ++i) {
+				interpolation.interpolate((-i-1)*extrapolationStep1, extrapolatingFrames2[i]);
 			}
 		}
 		showFrame(startFrame, green);
@@ -186,13 +205,18 @@ public class Swirl extends PApplet {
 		for (int i=0; i<interpolatingFramesCount; ++i) {
 			showFrame(interpolatingFrames[i], blue);
 		}
-		for (int i=0; i<extrapolatingFramesCount; ++i) {
-			showFrame(extrapolatingFrames[i], blue50);
+		if (showExtrapolating) {
+			for (int i=0; i<extrapolatingFramesCount1; ++i) {
+				showFrame(extrapolatingFrames1[i], blue50);
+			}
+			for (int i=0; i<extrapolatingFramesCount2; ++i) {
+				showFrame(extrapolatingFrames2[i], blue50);
+			}
 		}
 		if (animating) {
 			t += tpf * 0.7f;
 			s = (float) Math.pow(2, t)-1;
-			if (s > 1+extrapolatingFramesLength) {
+			if (s > 1+extrapolatingFramesLength1) {
 				t=0; s=0;
 			}
 			interpolation.interpolate(s, animatingFrame);
@@ -219,6 +243,9 @@ public class Swirl extends PApplet {
 		if (key == '~') {
 			filming = !filming;
 		}
+		if (key == '!') {
+			takePicture = true;
+		}
 		if (key == ']') {
 			showControlPolygon = !showControlPolygon;
 		}
@@ -227,6 +254,12 @@ public class Swirl extends PApplet {
 		}
 		if (key == 'G') {
 			gouraud = !gouraud;
+		}
+		if (key == 'e') {
+			showExtrapolating = !showExtrapolating;
+		}
+		if (key == 'd') {
+			showDebug = !showDebug;
 		}
 
 		// if(key=='.') F=P.Picked(); // snaps focus F to the selected vertex of P (easier to rotate and zoom while keeping it in center)
