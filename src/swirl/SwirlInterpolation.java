@@ -45,10 +45,7 @@ public class SwirlInterpolation implements Interpolation {
 		
 		//Test
 		Vector3f test = new Vector3f();
-		test.addLocal(F);
-		test.addScaleLocal(project(start.P.subtract(F), N), -m);
-		test.addScaleLocal(start.P.subtract(F).subtract(project(start.P.subtract(F), N)), (float) (m*Math.cos(alpha)));
-		test.addScaleLocal(N.cross(start.P.subtract(F).subtract(project(start.P.subtract(F), N))), (float) (-m*Math.sin(alpha)));
+		interpolate(1, start.P, test);
 		System.out.println(" calculated P1=" + test+", expected P1="+end.P);
 
 		//System.out.println(" lhs="+lhs);
@@ -60,10 +57,10 @@ public class SwirlInterpolation implements Interpolation {
 		double nx = N.x;
 		double ny = N.y;
 		double nz = N.z;
-		double norm = Math.sqrt(nx*nx + ny*ny + nz*nz);
-		nx/=norm;
-		ny/=norm;
-		nz/=norm;
+//		double norm = Math.sqrt(nx*nx + ny*ny + nz*nz);
+//		nx/=norm;
+//		ny/=norm;
+//		nz/=norm;
 		double ox = start.P.x;
 		double oy = start.P.y;
 		double oz = start.P.z;
@@ -82,24 +79,37 @@ public class SwirlInterpolation implements Interpolation {
 		double Nsqsq = -nx2+nx4-ny2+ny4-nz2+nz4;
 		double cos = Math.cos(alpha);
 		double sin = Math.sin(alpha);
-		double s2a = Math.sin(alpha*2);
 		double cos2 = cos*cos;
 		double cos3 = cos2*cos;
 		double sin2 = sin*sin;
 		
-		double D = (1 - m*Nsq + m*(-1 + Nsq)*cos)*(1 + cos2*m2 - 2*m*cos + m2*Nsq*sin2);
-		
-		double fx = -((px - m*ox*Math.cos(alpha) - 2*m*px*Math.cos(alpha) + 2*Math.pow(m,2)*ox*Math.pow(Math.cos(alpha),2) + Math.pow(m,2)*px*Math.pow(Math.cos(alpha),2) - Math.pow(m,3)*ox*Math.pow(Math.cos(alpha),3) + 
-       2*m*(1 + m)*Math.pow(ny,2)*(ox - px)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*Math.pow(nz,2)*(ox - px)*Math.pow(Math.sin(alpha/2.),2) - 2*m*(1 + m)*nx*ny*(oy - py)*Math.pow(Math.sin(alpha/2.),2) - 
-       2*m*(1 + m)*nx*nz*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) - m*nz*(oy - py)*(-1 + m*Math.cos(alpha))*Math.sin(alpha) + m*ny*(oz - pz)*(-1 + m*Math.cos(alpha))*Math.sin(alpha))/Math.pow(-1 + m*Math.cos(alpha),3));
-		
-		double fy = (-py + m*oy*Math.cos(alpha) + 2*m*py*Math.cos(alpha) - 2*Math.pow(m,2)*oy*Math.pow(Math.cos(alpha),2) - Math.pow(m,2)*py*Math.pow(Math.cos(alpha),2) + Math.pow(m,3)*oy*Math.pow(Math.cos(alpha),3) + 
-     2*m*(1 + m)*nx*ny*(ox - px)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*Math.pow(ny,2)*(oy - py)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*ny*nz*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) - 
-     m*nz*(ox - px)*(-1 + m*Math.cos(alpha))*Math.sin(alpha) + m*nx*(oz - pz)*(-1 + m*Math.cos(alpha))*Math.sin(alpha))/Math.pow(-1 + m*Math.cos(alpha),3);
-		
-		double fz = -((pz + Math.pow(m,2)*(2*oz + pz)*Math.pow(Math.cos(alpha),2) - Math.pow(m,3)*oz*Math.pow(Math.cos(alpha),3) - 2*m*(1 + m)*nx*nz*(ox - px)*Math.pow(Math.sin(alpha/2.),2) - 2*m*(1 + m)*ny*nz*(oy - py)*Math.pow(Math.sin(alpha/2.),2) - 
-       2*m*(1 + m)*Math.pow(nz,2)*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) + m*ny*(ox - px)*Math.sin(alpha) + m*nx*(-oy + py)*Math.sin(alpha) - m*Math.cos(alpha)*(oz + 2*pz + m*(ny*(ox - px) + nx*(-oy + py))*Math.sin(alpha)))/
-     Math.pow(-1 + m*Math.cos(alpha),3));
+		double D = (m-1)*(1 + m2 - 2*m*cos);
+		double fx = (m*ox + m3*ox - px - m2*px 
+				+ m*(1 + m)*ny2*(ox - px)*(-1 + cos) 
+				+ m*(1 + m)*nz2*(ox - px)*(-1 + cos) 
+				- m*(1 + m)*nx*ny*(oy - py)*(-1 + cos) 
+				- m*(1 + m)*nx*nz*(oz - pz)*(-1 + cos) 
+				- 2*m2*ox*cos + 2*m*px*cos 
+				- (-1 + m)*m*nz*(oy - py)*sin 
+				+ (-1 + m)*m*ny*(oz - pz)*sin) 
+				/ D;
+		double fy = -((m2*oy - m3*oy + py - m*py 
+				+ m*(1 + m)*nx*ny*(ox - px)*(-1 + cos) 
+				+ m*(1 + m)*ny2*(oy - py)*(-1 + cos) 
+				+ m*(1 + m)*ny*nz*(oz - pz)*(-1 + cos) 
+				- m*oy*cos + m2*oy*cos 
+				- m*py*cos + m2*py*cos 
+				- (-1 + m)*m*nz*(ox - px)*sin 
+				+ (-1 + m)*m*nx*(oz - pz)*sin) 
+				/ D);
+		double fz = -((m2*oz - m3*oz + pz - m*pz 
+				+ m*(1 + m)*nx*nz*(ox - px)*(-1 + cos) 
+				+ m*(1 + m)*ny*nz*(oy - py)*(-1 + cos) 
+				+ m*(1 + m)*nz2*(oz - pz)*(-1 + cos) 
+				- m*oz*cos + m2*oz*cos - m*pz*cos + m2*pz*cos 
+				+ (-1 + m)*m*ny*(ox - px)*sin 
+				- (-1 + m)*m*nx*(oy - py)*sin)
+				/ D);
 		
 		F = new Vector3f((float) fx, (float) fy, (float) fz);
 	}
@@ -274,10 +284,11 @@ public class SwirlInterpolation implements Interpolation {
 	}
 
 	private void interpolate(float t, Vector3f P0, Vector3f store) {
-		store.set(F);
-		Vector3f FP0 = P0.subtract(F);
-		Vector3f rot = rotate(alpha*t, FP0);
-		store.addScaleLocal(rot, (float) Math.pow(m, t));
+//		store.set(F);
+//		Vector3f FP0 = P0.subtract(F);
+//		Vector3f rot = rotate(alpha*t, FP0);
+//		store.addScaleLocal(rot, (float) Math.pow(m, t));
+		store.set(F.add(rotate(alpha*t, P0.subtract(F)).mult((float) Math.pow(m, t))));
 	}
 
 	/**
@@ -287,12 +298,16 @@ public class SwirlInterpolation implements Interpolation {
 	 * @return 
 	 */
 	private Vector3f rotate(float angle, Vector3f X) {
-		Vector3f W = project(X, N);
+//		Vector3f W = project(X, N);
+//		Vector3f U = X.subtract(W);
+//		Vector3f result = new Vector3f(W);
+//		result.addScaleLocal(U, (float) Math.cos(angle));
+//		result.addScaleLocal(N.cross(U), -(float) Math.sin(angle));
+//		return result;
+		Vector3f W = N.mult(N.dot(X));
 		Vector3f U = X.subtract(W);
-		Vector3f result = new Vector3f(W);
-		result.addScaleLocal(U, (float) Math.cos(angle));
-		result.addScaleLocal(N.cross(U), -(float) Math.sin(angle));
-		return result;
+		return W.add(U.mult((float) Math.cos(angle)))
+				.subtract(N.cross(U).mult((float) Math.sin(angle)));
 	}
 
 	@Override
