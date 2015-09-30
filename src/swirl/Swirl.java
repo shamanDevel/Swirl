@@ -69,21 +69,23 @@ public class Swirl extends PApplet {
 		myFace = loadImage("data/pic.jpg");  // load image from file pic.jpg in folder data *** replace that file with your pic of your own face
 		textureMode(NORMAL);
 		
-		startFrame.P.set(-4, -1, -1);
-		startFrame.I.set(1, 0, 0);
-		startFrame.J.set(0, 1, 0);
-		startFrame.K.set(0, 0, 1);
 		Quaternion quat = new Quaternion();
-		quat.fromAngles(DEG_TO_RAD * 20, DEG_TO_RAD * -50, DEG_TO_RAD * 120);
+		
+		startFrame.P.set(-4, -1, -1);
+		startFrame.I.set(1.4f, 0, 0);
+		startFrame.J.set(0, 1.4f, 0);
+		startFrame.K.set(0, 0, 1.4f);
+		quat.fromAngles(DEG_TO_RAD * 40, DEG_TO_RAD * 50, DEG_TO_RAD * 120);
 		quat.multLocal(startFrame.I);
 		quat.multLocal(startFrame.J);
 		quat.multLocal(startFrame.K);
 		
 		endFrame.P.set(4, 1, 1);
-		endFrame.I.set(1.1f, 0, 0);
-		endFrame.J.set(0, 1.1f, 0);
-		endFrame.K.set(0, 0, 1.1f);
+		endFrame.I.set(1f, 0, 0);
+		endFrame.J.set(0, 1f, 0);
+		endFrame.K.set(0, 0, 1f);
 		quat.fromAngles(DEG_TO_RAD * -60, DEG_TO_RAD * 15, DEG_TO_RAD * 30);
+//		quat.fromAngleAxis(40 * DEG_TO_RAD, endFrame.P.subtract(startFrame.P));
 		quat.multLocal(endFrame.I);
 		quat.multLocal(endFrame.J);
 		quat.multLocal(endFrame.K);

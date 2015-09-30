@@ -1,4 +1,4 @@
-\documentclass[journal, letterpaper]{IEEEtran}
+\documentclass[tikz, journal, letterpaper]{IEEEtran}
 %\documentclass{scrartcl}
 
 \usepackage[ngerman,english]{babel}
@@ -29,7 +29,7 @@
 
 %\title{Simulating elastic spheres without external forces}
 %\subtitle{Project 1 for class CS6491 Computer Graphics}
-\title{Swirl \\
+\title{Swirl\\
 	{\large Project 2 for class CS6491 Computer Graphics}}
 %\author{Sebastian Weiss}
 \author{Sebastian Weiss, Kristian Eberhardson\\ \today}
@@ -40,6 +40,10 @@
 \begin{tikzpicture}[remember picture,overlay]
    \node[anchor=north east,inner sep=0pt] at (current page.north east)
               {\includegraphics[scale=1]{pic}};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture,overlay]
+   \node[anchor=north west,inner sep=10pt] at (current page.north west)
+              {\includegraphics[scale=0.4]{pictures/P4.png}};
 \end{tikzpicture}
 
 \section{Objective}
@@ -57,16 +61,25 @@ The Frames $A_0$ and $A_1$ consist of a point $P_i$ and a right hand coordinate 
 \section{Related interpolation schemes}
 
 \subsection{Logarithmic spiral in 2D}
-A series of pairwise adjacent frames converge to a fixed point F when the motion is repeated indefinitely.  This motion preserves the angle between each frame, which we denote $\alpha$.  This motion also uses the same scaling factor between each pair of adjacent frames, so we calculate $m = (A_1).length / (A_0).length$.  Because we estimate curves as lines consisting of finitely many points in Processing, we can recursively follow the motion to F, and the program will terminate in a finite amount of time; this is the approach Professor Rossignac uses in his project: "Patterns of Similar Frames and Interpolation".  The steps are to rotate the current frame A by $\alpha$ scale by m, and then have the function call itself with the new frame's parameters.  This coincidentally gives us all the in-between keyframes as well, since we are using them to find F. 
+In 2D, a frame is given by three two-dimensional vectors. Prof. Rossignac proposes a combination of a linear rotation and an exponential scaling to realize a steady interpolation between two dimensional frames, see Fig. \ref{fig:P6}.
+The formula for this approach is the following:
+\begin{equation}
+ P(t) := F + m^t FP_0 ^{\;\circ} (\alpha t)
+\label{eq:logSpiral}
+\end{equation}
+$FP_0 ^{\;\circ} (\alpha t)$ denotes the normal 2d rotation of the vector $FP_0$ around the origin with the angle $\alpha t$.
+\begin{figure}[H]
+	\centering
+		\includegraphics[scale=0.4]{pictures/P6.png}
+	\caption{log spiral in 2D}
+	\label{fig:P6}
+\end{figure}
 
 \subsection{Linear interpolation in 3D}
-For all points in $A_0$, draw a straight line to its corresponding point in $A_1$.  Motion is simply moving the frame along these lines.  This is neither an elegant solution nor does it preserve the area of the frame.
-
-\subsection{Projected log spiral + Translation}
-
+For all points in $A_0$, draw a straight line to its corresponding point in $A_1$. Motion is simply moving the frame along these lines.  This is neither an elegant solution nor does it preserve the area of the frame.
 
 \section{Proposed model}
-We wish to create a swirling motion in 3D related to the logarithmic spiral. Therefore, we are using a combination of linear rotation around the rotation axis $N$ with the origin in $F$ and an exponential scaling with the factor $m$. We propose the following formula:
+We wish to create a swirling motion in 3D related to the logarithmic spiral in 2D. Therefore, we are using a combination of linear rotation around the rotation axis $N$ with the origin in $F$ and an exponential scaling with the factor $m$. We propose the following formula:
 \begin{equation}
  P(t) := F + m^t FP_0 ^{\;\circ} (\alpha t; N)
 \label{eq:Interpolation}
@@ -84,6 +97,34 @@ A rotation in 2D is very straightforward because there is no choice of the rotat
 \end{array}
 \label{eq:Rotation}
 \end{equation}
+
+Fig. \ref{tikz:Rot} visualizes the rotation around the axis $N$ in 3D.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+	\filldraw[color=white,fill=blue!20,fill opacity=0.5] (-3,-1.5) -- (2,-1.5) -- (3,1.5) -- (-2,1.5) -- cycle;
+	\draw[color=orange] (-0.5,0) arc (-180:-61.7:0.5);
+	\draw[line width=1mm,color=black!60,->] (0,0) -- (-1.5,0);
+	\draw[line width=1mm,color=black!60,->] (0,0) -- (0.7,-1.3);
+	\draw[line width=1mm,dotted,color=black!50] (-1.5,0) -- (-1.5,1);
+	\draw[line width=1mm,dotted,color=black!50] (0.7,-1.3) -- (0.7,0.5);
+	\draw[line width=1.5mm,color=green,->,line cap=round] (0,0) -- (-1.5,1);
+	\draw[line width=1.5mm,color=red,->,line cap=round] (0,0) -- (0.7,0.5);
+	\draw[line width=1.5mm,color=black,->,line cap=round] (0,0) -- (0,2);
+	\node at (0.4,2) {$N$};
+	\node at (-0.7,1) {$FP_0$};
+	\node at (0.5,0.7) {$FP_1$};
+	\node at (-1.8,0.5) {$W$};
+	\node at (1,-0.4) {$W$};
+	\node at (-0.75,-0.3) {$U$};
+	\node at (0.1,-0.9) {$U$};
+	\node[color=orange] at (-0.35,-0.6) {$\alpha$};
+\end{tikzpicture}
+\caption{3D-Rotation}
+\label{tikz:Rot}
+\end{figure}
+
 
 \subsection{Calculating $N$, $\alpha$ and $m$}
 Since $m$ is the scaling factor, it is calculated as:
@@ -112,12 +153,19 @@ Furthermore, we need the rotation angle $\alpha$. To compute this angle, we firs
 \end{array}
 \label{eq:ProjBasis}
 \end{equation}
+The $B'$-vectors correspond to normalized versions of the $U$-vectors in Fig. \ref{tikz:Rot}.
 Then we define
 \begin{equation}
  \alpha = \max \{ \cos^{-1}(I_0' \bullet I_1'), \cos^{-1}(J_0' \bullet J_1'), \cos^{-1}(K_0' \bullet K_1') \}
 \label{eq:}
 \end{equation}
-We take the maximum angle here because all angles are equal by the definition of $N$. At most one of these angles can be zero, this happens in the case if the rotation axis is exactly orthogonal to that frame axis.
+We take the maximum angle here because all angles are equal by the definition of $N$. At most one of these angles can be zero, this happens in the case if the rotation axis is exactly orthogonal to that frame axis, see \ref{fig:P1}.
+\begin{figure}
+	\centering
+		\includegraphics[scale=0.4]{pictures/P1.png}
+	\caption{rotation parallel to a frame axis}
+	\label{fig:P1}
+\end{figure}
 
 \subsection{Calculating $F$}
 Now we have $N$, $\alpha$ and $m$ and we can compute $F$ now by solving the equation system
@@ -176,13 +224,35 @@ First, $N$ is not defined when the rotation between the two input frames is zero
 Second, $F$ goes to infinity when $m$ goes to zero, since the translation of the frames rely on the scaling.
 
 \subsubsection{No rotation, but scaling}\label{NoRot}
+In the case that there is no rotation, the rotation axis $N$ is the zero vector and the rotation angle $\alpha$ is also zero.
+The translation is then realized by the scaling, see Fig. \ref{fig:P2}. The fixpoint $F$ is calculated as usual. It can also be seen as the intersection point of the lines connecting the tips of the arrows and the frame origin from the start frame to the end frame.
+\begin{figure}
+	\centering
+		\includegraphics[scale=0.4]{pictures/P2.png}
+	\caption{no rotation, translation by scaling}
+	\label{fig:P2}
+\end{figure}
 
 \subsubsection{No rotation, no scaling}
-(N = 0, have only translation)
+If we start with the case presented in the previous section and let $m$ run to 1, the fixpoint $F$ runs against infinity. We therefore observe that the case of no rotation and no scaling degenerates to a linear interpolation with pure translation, see Fig. \ref{fig:P5}.
+\begin{figure}
+	\centering
+		\includegraphics[scale=0.4]{pictures/P5.png}
+	\caption{pure translation}
+	\label{fig:P5}
+\end{figure}
 
-\subsubsection{pure scaling}
-For this case, we only need to calculate m.  Then, we can just scale the motion by m.
+\subsubsection{No scaling, but rotation}
+If the scaling factor $m$ is 1, $F$ goes to infinity and the swirl motion degenerates to a circular motion. Translation can only be represented in the plane of rotation since this model relies on the scaling to represent translation orthogonal the the rotation plane. Therefore, this special case cannot be represented with the proposed model.
 
 \section{Results}
+
+\begin{figure}
+	\centering
+		\includegraphics[scale=0.4]{pictures/P3.png}
+	\caption{swirl motion is attracted by the fixpoint $F$}
+	\label{fig:P3}
+\end{figure}
+
 
 \end{document}

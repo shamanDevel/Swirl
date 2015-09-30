@@ -13,9 +13,14 @@ public class SwirlInterpolation implements Interpolation {
 	private Frame end;
 
 	private float m;
-	Vector3f N = new Vector3f();
+	private Vector3f N = new Vector3f();
 	private float alpha;
-	Vector3f F;
+	private Vector3f F;
+	
+	/**
+	 * 0: normal, 1: no rot, no scaling -> linear interpolation
+	 */
+	private int specialCases = 0;
 
 	@Override
 	public void setStartEnd(Frame start, Frame end) {
@@ -30,6 +35,16 @@ public class SwirlInterpolation implements Interpolation {
 
 		//Calculate N and alpha
 		calcNAlpha();
+		
+		//check special case
+		if (alpha == 0 && m == 1) {
+			specialCases = 1;
+			System.out.println(" scaling m=" + m);
+			System.out.println(" special case: no rotation, no scaling");
+			return;
+		}
+		specialCases = 0;
+		
 		//calculate F
 		calcF();
 		//Check if the rotation axis N is flipped
@@ -158,9 +173,9 @@ public class SwirlInterpolation implements Interpolation {
 		Vector3f pI1 = projectOnPlane(I1, N).normalizeLocal();
 		Vector3f pJ1 = projectOnPlane(J1, N).normalizeLocal();
 		Vector3f pK1 = projectOnPlane(K1, N).normalizeLocal();
-		float angle1 = pI0.angleBetween(pI1);
-		float angle2 = pJ0.angleBetween(pJ1);
-		float angle3 = pK0.angleBetween(pK1);
+		float angle1 = (pI0.lengthSquared()==0 || pI1.lengthSquared()==0) ? 0 : pI0.angleBetween(pI1);
+		float angle2 = (pJ0.lengthSquared()==0 || pJ1.lengthSquared()==0) ? 0 : pJ0.angleBetween(pJ1);
+		float angle3 = (pK0.lengthSquared()==0 || pK1.lengthSquared()==0) ? 0 : pK0.angleBetween(pK1);
 		System.out.println("a1= " + angle1 + "  a2=" + angle2 + "  a3=" + angle3);
 		//choose greatest angle
 		if (Math.abs(angle1) >= Math.abs(angle2) && Math.abs(angle1) >= Math.abs(angle3)) {
@@ -268,14 +283,15 @@ public class SwirlInterpolation implements Interpolation {
 		interpolate(t, tmp, toSet.K);
 		toSet.K.subtractLocal(refP);
 
-//		System.out.println("Frame at t="+t+": "+toSet);
 	}
 
 	private void interpolate(float t, Vector3f P0, Vector3f store) {
-//		store.set(F);
-//		Vector3f FP0 = P0.subtract(F);
-//		Vector3f rot = rotate(alpha*t, FP0);
-//		store.addScaleLocal(rot, (float) Math.pow(m, t));
+		if (specialCases == 1) {
+			//linear interpolation
+			store.set(P0.add(end.P.subtract(start.P).multLocal(t)));
+			return;
+		}
+		
 		store.set(F.add(rotate(alpha*t, P0.subtract(F)).mult((float) Math.pow(m, t))));
 	}
 
@@ -286,12 +302,6 @@ public class SwirlInterpolation implements Interpolation {
 	 * @return 
 	 */
 	private Vector3f rotate(float angle, Vector3f X) {
-//		Vector3f W = project(X, N);
-//		Vector3f U = X.subtract(W);
-//		Vector3f result = new Vector3f(W);
-//		result.addScaleLocal(U, (float) Math.cos(angle));
-//		result.addScaleLocal(N.cross(U), -(float) Math.sin(angle));
-//		return result;
 		Vector3f W = N.mult(N.dot(X));
 		Vector3f U = X.subtract(W);
 		return W.add(U.mult((float) Math.cos(angle)))
@@ -300,6 +310,10 @@ public class SwirlInterpolation implements Interpolation {
 
 	@Override
 	public void debugDraw(Swirl swirl) {
+		if (specialCases > 0) {
+			return;
+		}
+		
 		swirl.pushMatrix();
 		swirl.translate(F.x * Swirl.SCALE, F.y * Swirl.SCALE, F.z * Swirl.SCALE);
 		swirl.noStroke();
@@ -315,11 +329,16 @@ public class SwirlInterpolation implements Interpolation {
 	@Override
 	public String debugString() {
 		StringBuilder str = new StringBuilder();
-		str.append("Swirl Interpolation P(t)=F+(m^t)*FPo^(alpha*t,N)\n");
-		str.append("scaling m=").append(m).append("\n");
-		str.append("rotation axis N=").append(N).append("\n");
-		str.append("rotation angle alpha=").append(alpha).append(" (").append(alpha * 180 / Math.PI).append("°)\n");
-		str.append("rotation center F=").append(F);
+		str.append("Swirl Interpolation P(t) = F + (m^t)*FPo°(alpha*t,N)\n");
+		str.append("X°(a*t,N) = W + cos(a*t)U - sin(a*t)(NxU), W=(X.N)N, U=X-W\n");
+		if (specialCases == 0) {
+			str.append("scaling m=").append(m).append("\n");
+			str.append("rotation axis N=").append(N).append("\n");
+			str.append("rotation angle alpha=").append(alpha).append(" (").append(alpha * 180 / Math.PI).append("°)\n");
+			str.append("rotation center F=").append(F);
+		} else if (specialCases == 1) {
+			str.append("special case: no rotation, no scaling, translation along the vector ").append(end.P.subtract(start.P));
+		}
 		return str.toString();
 	}
 }

@@ -355,7 +355,8 @@ public class SwirlInterpolation2 implements Interpolation {
 	@Override
 	public String debugString() {
 		StringBuilder str = new StringBuilder();
-		str.append("Swirl Interpolation P(t)=F+(m^t)*FPo^(alpha*t,N) with modified rotation\n");
+		str.append("Swirl Interpolation P(t) = F + (m^t)*FPo°(alpha*t,N) with modified rotation\n");
+		str.append("X°(a*t,N) = lerp(W,-W,t) + cos(a*t)U - sin(a*t)(NxU), W=(X.N)N, U=X-W\n");
 		str.append("scaling m=").append(m).append("\n");
 		str.append("rotation axis N=").append(N).append("\n");
 		str.append("rotation angle alpha=").append(alpha).append(" (").append(alpha * 180 / Math.PI).append("°)\n");
