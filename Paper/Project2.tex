@@ -93,17 +93,85 @@ Since $m$ is the scaling factor, it is calculated as:
 \end{equation}
 Because $I_i$, $J_i$, and $K_i$ are of the same length for each $i$, it does not matter which we use. 
  
-To calculate $N$, we first define $\Delta I := I_1 - I_0$, $\Delta J = J_1 - J_0$, and $\Delta K = K_1 - K_0$. Then, we want to pick $N = dI\text{ x }dJ$ or $N = dI\text{ x }dK$ or $N = dJ\text{ x }dK$ depending on $\max{(|dI\text{ x }dJ|, |dI\text{ x  }dK|, |dJ\text{ x }dK|)}$.  
-Let $pI0 = (I_0 \bullet N)N$, $pI1 = (I_1 \bullet N)N$, $pJ0 = (J_0 \bullet N)N$, $pJ1 = (J_1 \bullet N)N$, $pK0 = (K_0 \bullet N)N$, $pK1 = (K_1 \bullet N)N$.  Let $angle1$ denote the angle between $pI0$ and $pI1$, $angle2$ denote the angle between $pJ0$ and $pJ1$, and $angle3$ denote the angle between $pK0$ and $pK1$.  Then, $\alpha = \max{(angle1, angle2, angle3)}$. 
+To calculate the rotation axis $N$, we first define 
+\begin{equation}
+\Delta I:= I_1 - I_0, \ \Delta J := J_1 - J_0, \ \Delta K := K_1 - K_0
+\end{equation}
+Then we pick the largest vector in the euclidean norm out of 
+\begin{equation}
+N_a := \Delta I \times \Delta J, \ N_b := \Delta I \times \Delta K, \ N_c := \Delta J \times \Delta K
+\end{equation}
+We call the largest vector $N$. Since $I_i$, $J_i$ and $K_i$ form an orthogonal basis, these vectors all point in the same direction and differ only in the scaling. The reasons for choosing the largest one are numerically issues. Some of these $N$'s can be very small when the rotation axis is almost parallel to the frame axes, they are zero if they are exactly parallel. The special case when all $N$'s are zero, so $\Delta I$, $\Delta J$ and $\Delta K$ are all zero, happens if there is no rotation at all. See section \ref{NoRot} on how to deal with this case. In the later computation, we always need the normalized vector $\underline{N}:=N/|N|$.
+  
+Furthermore, we need the rotation angle $\alpha$. To compute this angle, we first project each basis vector into the plane defined by $\underline{N}$ and normalize them:
+\begin{equation}
+\begin{array}{lcl}
+ proj(X) &:=& X - X\angle\underline{N} = X - (X \bullet \underline{N})\underline{N} \\
+ norm(X) &:=& X / |X| \\
+ B' &:=& norm(proj(B_i)) \ \forall B \in \{I_0,...,K_1\}
+\end{array}
+\label{eq:ProjBasis}
+\end{equation}
+Then we define
+\begin{equation}
+ \alpha = \max \{ \cos^{-1}(I_0' \bullet I_1'), \cos^{-1}(J_0' \bullet J_1'), \cos^{-1}(K_0' \bullet K_1') \}
+\label{eq:}
+\end{equation}
+We take the maximum angle here because all angles are equal by the definition of $N$. At most one of these angles can be zero, this happens in the case if the rotation axis is exactly orthogonal to that frame axis.
 
 \subsection{Calculating $F$}
+Now we have $N$, $\alpha$ and $m$ and we can compute $F$ now by solving the equation system
+\begin{equation}
+ P_1 = P(1) := F + m FP_0 ^{\;\circ} (\alpha; N)
+\label{eq:Feq}
+\end{equation}
+This system is a linear system in the three variables $F_x$, $F_y$ and $F_z$. We obtain an explicit formulation for $F$ by converting it into matrix form, solving it using Cramer's Rule and applying simplification. For purposes of notation, we introduce the following variables for the vector components: $P_0=(P_{0,x},P_{0,y},P_{0,z})^T, P_1=(P_{1,x},P_{1,y},P_{1,z})^T,\\ \underline{N}=(N_x,N_y,N_z)^T$.
+\begin{equation}
+\begin{array}{lcl}
+	F_x &=& (m P_{0,x} + m^3 P_{0,x} - P_{1,x} - m^2 P_{1,x} \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) (N_x^2 + N_z^2) \\
+		&& - m (1+m) (\cos\alpha - 1) (P_{0,y} - P_{1,y}) N_x N_y \\
+		&& - m (1+m) (\cos\alpha - 1) (P_{0,z} - P_{1,z}) N_x N_z \\
+		&& - m (m-1) \sin\alpha (P_{0,y} - P_{1,y}) N_z \\
+		&& + m (m-1) \sin\alpha (P_{0,z} - P_{1,z}) N_y \\
+		&& - 2 m^2 P_{0,x} \cos\alpha + 2 m P_{1,x} \cos\alpha ) \\
+		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
+\end{array}
+\end{equation}
+\begin{equation}
+\begin{array}{lcl}
+ F_y &=& -(m^2 P_{0,y} - m^3 P_{0,y} + P_{1,y} - m P_{1,y} \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) N_x N_y \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,y} - P_{1,y}) N_y^2 \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,z} - P_{1,z}) N_y N_z \\
+		&& - m (m-1) \sin\alpha (P_{0,x} - P_{1,x}) N_z \\
+		&& + m (m-1) \sin\alpha (P_{0,z} - P_{1,z}) N_x \\
+		&& - m P_{0,y} \cos\alpha + m^2 P_{0,y} \cos\alpha \\
+		&& - m P_{1,y} \cos\alpha + m^2 P_{1,y} \cos\alpha) \\
+		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
+\end{array}
+\label{eq:}
+\end{equation}
+\begin{equation}
+\begin{array}{lcl}
+ F_z &=& -(m^2 P_{0,z} - m^3 P_{0,z} + P_{1,z} - m P_{1,z} \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) N_x N_z \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,y} - P_{1,y}) N_y N_z \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,z} - P_{1,z}) N_z^2 \\
+		&& - m (m-1) \sin\alpha (P_{0,y} - P_{1,y}) N_x \\
+		&& + m (m-1) \sin\alpha (P_{0,x} - P_{1,x}) N_y \\
+		&& - m P_{0,z} \cos\alpha + m^2 P_{0,z} \cos\alpha \\
+		&& - m P_{1,z} \cos\alpha + m^2 P_{1,z} \cos\alpha) \\
+		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
+\end{array}
+\label{eq:}
+\end{equation}
 
-\subsection{Proof of steadiness}
 
 \subsection{Dealing with special cases}
 These are the cases in which there is either no fixed point or more than one around which our motion rotates steadily.
 
-\subsubsection{No rotation}
+\subsubsection{No rotation}\label{NoRot}
 
 \subsubsection{No rotation, no scaling}
 (N = 0, have only translation)
