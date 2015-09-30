@@ -89,32 +89,17 @@ public class SwirlInterpolation implements Interpolation {
 		
 		double D = (1 - m*Nsq + m*(-1 + Nsq)*cos)*(1 + cos2*m2 - 2*m*cos + m2*Nsq*sin2);
 		
-		double fx = (cos3*m3*(-1 + Nsq)*ox - m*nx2*ox - m*nx*ny*oy - m*nx*nz*oz + px - m*ny2*px - m*nz*px + m*nx*ny*py - 
-     cos2*m2*((-2 + (2 + m)*nx2 + (1 + m)*ny2 + nz + m*nz)*ox + (-1 + ny2 + nz)*px + nx*(ny*(oy - py) + nz*(oz - pz))) + m*nx*nz*pz - 
-     m2*(m*Nsq*Nsq*ox - ny2*ox - nz*ox + nx*nz*oz - nx2*px + nx*ny*(oy - py) - nx*nz*pz)*sin2 + 
-     m*cos*((-1 + (1 + 2*m)*nx2 + m*(ny2 + nz))*ox + nx*ny*oy + m*nx*ny*oy + nx*nz*oz + m*nx*nz*oz - 2*px + ny2*px + m*ny2*px + 
-        nz*px + m*nz*px - nx*ny*py - m*nx*ny*py - nx*nz*pz - m*nx*nz*pz + m2*Nsqsq*ox*sin2 + 
-        m*(-1 + Nsq)*(nz*(-oy + py) + ny*(oz - pz))*sin) + 
-     m*sin*((-1 + m*Nsq)*(nz*(oy - py) + ny*(-oz + pz)) + m2*(ny2*nz + nx2*(ny2 + nz))*ox*s2a));
-		fx /= D;
+		double fx = -((px - m*ox*Math.cos(alpha) - 2*m*px*Math.cos(alpha) + 2*Math.pow(m,2)*ox*Math.pow(Math.cos(alpha),2) + Math.pow(m,2)*px*Math.pow(Math.cos(alpha),2) - Math.pow(m,3)*ox*Math.pow(Math.cos(alpha),3) + 
+       2*m*(1 + m)*Math.pow(ny,2)*(ox - px)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*Math.pow(nz,2)*(ox - px)*Math.pow(Math.sin(alpha/2.),2) - 2*m*(1 + m)*nx*ny*(oy - py)*Math.pow(Math.sin(alpha/2.),2) - 
+       2*m*(1 + m)*nx*nz*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) - m*nz*(oy - py)*(-1 + m*Math.cos(alpha))*Math.sin(alpha) + m*ny*(oz - pz)*(-1 + m*Math.cos(alpha))*Math.sin(alpha))/Math.pow(-1 + m*Math.cos(alpha),3));
 		
-		double fy = (-(m*nx*ny*ox) + cos3*m3*(-1 + Nsq)*oy - m*ny2*oy - m*ny*nz*oz + m*nx*ny*px + py - m*nx2*py - m*nz*py + m*ny*nz*pz - 
-     cos2*m2*((-2 + (2 + m)*ny2 + (1 + m)*nz)*oy + ny*nz*oz + nx*ny*(ox - px) - py + nz*py + nx2*(oy + m*oy + py) - ny*nz*pz) - 
-     m2*(m*nx4*oy - nz*oy + m*(ny2 + nz)*(ny2 + nz)*oy + nx2*(-1 + 2*m*(ny2 + nz))*oy + ny*nz*oz + nx*ny*(ox - px) - ny2*py - ny*nz*pz)*
-      sin2 + m*cos*(-oy + ny2*oy + 2*m*ny2*oy + m*nz*oy + ny*nz*oz + m*ny*nz*oz + (1 + m)*nx*ny*(ox - px) - 2*py + nz*py + 
-        m*nz*py + nx2*(py + m*(oy + py)) - ny*nz*pz - m*ny*nz*pz + m2*Nsqsq*oy*sin2 + 
-        m*(-1 + Nsq)*(nz*(ox - px) + nx*(-oz + pz))*sin) + 
-     m*sin*((-1 + m*Nsq)*(nz*(-ox + px) + nx*(oz - pz)) + m2*(ny2*nz + nx2*(ny2 + nz))*oy*s2a));
-		fy /= D;
+		double fy = (-py + m*oy*Math.cos(alpha) + 2*m*py*Math.cos(alpha) - 2*Math.pow(m,2)*oy*Math.pow(Math.cos(alpha),2) - Math.pow(m,2)*py*Math.pow(Math.cos(alpha),2) + Math.pow(m,3)*oy*Math.pow(Math.cos(alpha),3) + 
+     2*m*(1 + m)*nx*ny*(ox - px)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*Math.pow(ny,2)*(oy - py)*Math.pow(Math.sin(alpha/2.),2) + 2*m*(1 + m)*ny*nz*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) - 
+     m*nz*(ox - px)*(-1 + m*Math.cos(alpha))*Math.sin(alpha) + m*nx*(oz - pz)*(-1 + m*Math.cos(alpha))*Math.sin(alpha))/Math.pow(-1 + m*Math.cos(alpha),3);
 		
-		double fz = (-(m*nx*nz*ox) - m*ny*nz*oy + cos3*m3*(-1 + Nsq)*oz - m*nz*oz + m*nx*nz*px + m*ny*nz*py + pz - m*nx2*pz - m*ny2*pz - 
-     cos2*m2*(-2*oz + 2*nz*oz + m*nz*oz + nx*nz*(ox - px) + ny*nz*(oy - py) - pz + nx2*(oz + m*oz + pz) + ny2*(oz + m*oz + pz)) - 
-     m2*(m*nx4*oz + m*ny4*oz + ny2*(-1 + 2*m*nz)*oz + nx2*(-1 + 2*m*(ny2 + nz))*oz + m*nz4*oz + nx*nz*(ox - px) + ny*nz*(oy - py) - 
-        nz*pz)*sin2 + m*cos*(ny*nz*oy + m*ny*nz*oy - oz + m*ny2*oz + nz*oz + 2*m*nz*oz + (1 + m)*nx*nz*(ox - px) - ny*nz*py - 
-        m*ny*nz*py - 2*pz + ny2*pz + m*ny2*pz + nx2*(pz + m*(oz + pz)) + m2*Nsqsq*oz*sin2 + 
-        m*(-1 + Nsq)*(ny*(-ox + px) + nx*(oy - py))*sin) + 
-     m*sin*((-1 + m*Nsq)*(ny*(ox - px) + nx*(-oy + py)) + m2*(ny2*nz + nx2*(ny2 + nz))*oz*s2a));
-		fz /= D;
+		double fz = -((pz + Math.pow(m,2)*(2*oz + pz)*Math.pow(Math.cos(alpha),2) - Math.pow(m,3)*oz*Math.pow(Math.cos(alpha),3) - 2*m*(1 + m)*nx*nz*(ox - px)*Math.pow(Math.sin(alpha/2.),2) - 2*m*(1 + m)*ny*nz*(oy - py)*Math.pow(Math.sin(alpha/2.),2) - 
+       2*m*(1 + m)*Math.pow(nz,2)*(oz - pz)*Math.pow(Math.sin(alpha/2.),2) + m*ny*(ox - px)*Math.sin(alpha) + m*nx*(-oy + py)*Math.sin(alpha) - m*Math.cos(alpha)*(oz + 2*pz + m*(ny*(ox - px) + nx*(-oy + py))*Math.sin(alpha)))/
+     Math.pow(-1 + m*Math.cos(alpha),3));
 		
 		F = new Vector3f((float) fx, (float) fy, (float) fz);
 	}
