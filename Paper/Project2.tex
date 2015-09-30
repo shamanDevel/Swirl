@@ -39,18 +39,18 @@
 
 \begin{tikzpicture}[remember picture,overlay]
    \node[anchor=north east,inner sep=0pt] at (current page.north east)
-              {\includegraphics[scale=1.5]{pic}};
+              {\includegraphics[scale=1]{pic}};
 \end{tikzpicture}
 
 \section{Objective}
-We are provided with the starting and ending frame pair, call them $A_0$ and $A_1$.  We wish to create a continuous, affine and steady motion which interpolates $A_0$ and $A_1$.
+We are provided with a starting and ending frame, called $A_0$ and $A_1$. We wish to create a continuous, affine and steady motion which interpolates $A_0$ and $A_1$.
  
 \section{Input}
-Assume $A_0$ and $A_1$ consist of a point P and a right hand coordinate system of orthogonal vectors I, J, and K, each of the same length.
+The Frames $A_0$ and $A_1$ consist of a point $P_i$ and a right hand coordinate system of orthogonal vectors $I_i$, $J_i$, and $K_i$, each of the same length ($i \in \{0,1\}$).
 \subsection{Terms} 
 1. An \underline{affine} transformation in three dimensions can be expressed as a 4x4 matrix multiplied onto a point or a vector, is reversible, and can be expressed solely as a combination of rotation, translation, and scaling.
 \newline
-2. A \underline{continuous} transformation is one in which for any $\epsilon > 0$, there exists a $\delta > 0$ such that for any $0 <= t, u <= 1$, if $t - u < \delta$, then for any point x, $(A_u - A_t)x < \epsilon$.  Intuitively, this means I can draw the motion with a pen in a single stroke.
+2. A \underline{continuous} transformation is one in which $\forall \epsilon>0 \; \exists \delta>0 \; \text{s.th.} \; |P_x - P_y|<\epsilon \; \forall x,y \; \text{with} \; |x-y|<\delta$. $P_x$ and $P_y$ denotes the interpolated point at time $x$ and $y$. Intuitively, this means we can draw the motion with a pen in a single stroke.
 \newline
 3. A \underline{steady} transformation preserves the angle between a pair of frames, and is independent of some time t. 
 
@@ -66,15 +66,34 @@ For all points in $A_0$, draw a straight line to its corresponding point in $A_1
 
 
 \section{Proposed model}
-We wish to create a swirling motion related to the logarithmic spiral but in 3D.  This means we need to calculate F, alpha, and m similarly to the 2D logarithmic spiral.
+We wish to create a swirling motion in 3D related to the logarithmic spiral. Therefore, we are using a combination of linear rotation around the rotation axis $N$ with the origin in $F$ and an exponential scaling with the factor $m$. We propose the following formula:
+\begin{equation}
+ P(t) := F + m^t FP_0 ^{\;\circ} (\alpha t; N)
+\label{eq:Interpolation}
+\end{equation}
 
-\subsection{3D rotation, first version}
+\subsection{3D rotation}
+A rotation in 2D is very straightforward because there is no choice of the rotation axis. In 3D we're given the rotation axis and rotate around it in the following way:
 
-\subsection{3D rotation, second version}
-
+\begin{equation}
+\begin{array}{lcl}
+ X^{\circ}(\alpha; N) &:=& W + U^{\circ}(\alpha; N) \\
+                        & =& W + \cos \alpha U - \sin \alpha (N \times U) \\
+ \multicolumn{3}{l}{\text{with } W := W\angle\underline{N} = (W\bullet\underline{N})\underline{N}} \\
+ \multicolumn{3}{l}{\text{and } U = X-W}
+\end{array}
+\label{eq:Rotation}
+\end{equation}
 
 \subsection{Calculating $N$, $\alpha$ and $m$}
-We calculate m just like we did in "Logarithmic Spiral in 2D", $m = (I_1).length / (I_0).length$ (since I, J, and K are of the same length, it does not matter which we use).  Then, $dI = I_1 - I_0$, $dJ = J_1 - J_0$, and $dK = K_1 - K_0$.  Then, we want to pick $N = dI\text{ x }dJ$ or $N = dI\text{ x }dK$ or $N = dJ\text{ x }dK$ depending on $\max{(|dI\text{ x }dJ|, |dI\text{ x  }dK|, |dJ\text{ x }dK|)}$.  
+Since $m$ is the scaling factor, it is calculated as:
+\begin{equation}
+ m := |I_1| / |I_0|
+\label{eq:m}
+\end{equation}
+Because $I_i$, $J_i$, and $K_i$ are of the same length for each $i$, it does not matter which we use. 
+ 
+To calculate $N$, we first define $\Delta I := I_1 - I_0$, $\Delta J = J_1 - J_0$, and $\Delta K = K_1 - K_0$. Then, we want to pick $N = dI\text{ x }dJ$ or $N = dI\text{ x }dK$ or $N = dJ\text{ x }dK$ depending on $\max{(|dI\text{ x }dJ|, |dI\text{ x  }dK|, |dJ\text{ x }dK|)}$.  
 Let $pI0 = (I_0 \bullet N)N$, $pI1 = (I_1 \bullet N)N$, $pJ0 = (J_0 \bullet N)N$, $pJ1 = (J_1 \bullet N)N$, $pK0 = (K_0 \bullet N)N$, $pK1 = (K_1 \bullet N)N$.  Let $angle1$ denote the angle between $pI0$ and $pI1$, $angle2$ denote the angle between $pJ0$ and $pJ1$, and $angle3$ denote the angle between $pK0$ and $pK1$.  Then, $\alpha = \max{(angle1, angle2, angle3)}$. 
 
 \subsection{Calculating $F$}
