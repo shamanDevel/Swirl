@@ -57,10 +57,6 @@ public class SwirlInterpolation implements Interpolation {
 		double nx = N.x;
 		double ny = N.y;
 		double nz = N.z;
-//		double norm = Math.sqrt(nx*nx + ny*ny + nz*nz);
-//		nx/=norm;
-//		ny/=norm;
-//		nz/=norm;
 		double ox = start.P.x;
 		double oy = start.P.y;
 		double oz = start.P.z;
@@ -70,18 +66,10 @@ public class SwirlInterpolation implements Interpolation {
 		double m2 = m*m;
 		double m3 = m2*m;
 		double nx2 = nx*nx;
-		double nx4 = nx2*nx2;
 		double ny2 = ny*ny;
-		double ny4 = ny2*ny2;
 		double nz2 = nz*nz;
-		double nz4 = nz2*nz2;
-		double Nsq = nx2 + ny2 + nz2; //should be one
-		double Nsqsq = -nx2+nx4-ny2+ny4-nz2+nz4;
 		double cos = Math.cos(alpha);
 		double sin = Math.sin(alpha);
-		double cos2 = cos*cos;
-		double cos3 = cos2*cos;
-		double sin2 = sin*sin;
 		
 		double D = (m-1)*(1 + m2 - 2*m*cos);
 		double fx = (m*ox + m3*ox - px - m2*px 

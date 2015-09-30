@@ -48,7 +48,7 @@ public class Swirl extends PApplet {
 	
 	private int pickedPoint = 0;
 
-	String title = "6491 P2 2015: 3D swirl", name = "Sebastian Weiß",
+	String title = "6491 P2 2015: 3D swirl", name = "Sebastian Weiß, Kristian Eberhardson",
 			menu = "1-4: change interpolation, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, a:anim, #:quit",
 			guide = "click'n'drag center of frames or arrow tips to change the start frame (green) and end frame (red)"; // user's guide
 
@@ -96,8 +96,8 @@ public class Swirl extends PApplet {
 			new LinearInterpolation(),
 			new SwirlInterpolation(),
 			new SwirlInterpolation2(),
-			new SwirlInterpolation3(),
-			new SAMInterpolation()
+			new SwirlInterpolation3() /*,
+			new SAMInterpolation() */
 		};
 		selectedInterpolation = 1;
 		recalculateFrames = true;
