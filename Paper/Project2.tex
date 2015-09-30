@@ -129,7 +129,8 @@ This system is a linear system in the three variables $F_x$, $F_y$ and $F_z$. We
 \begin{equation}
 \begin{array}{lcl}
 	F_x &=& (m P_{0,x} + m^3 P_{0,x} - P_{1,x} - m^2 P_{1,x} \\
-		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) (N_x^2 + N_z^2) \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) N_y^2 \\
+		&& + m (1+m) (\cos\alpha - 1) (P_{0,x} - P_{1,x}) N_z^2 \\
 		&& - m (1+m) (\cos\alpha - 1) (P_{0,y} - P_{1,y}) N_x N_y \\
 		&& - m (1+m) (\cos\alpha - 1) (P_{0,z} - P_{1,z}) N_x N_z \\
 		&& - m (m-1) \sin\alpha (P_{0,y} - P_{1,y}) N_z \\
@@ -137,6 +138,7 @@ This system is a linear system in the three variables $F_x$, $F_y$ and $F_z$. We
 		&& - 2 m^2 P_{0,x} \cos\alpha + 2 m P_{1,x} \cos\alpha ) \\
 		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
 \end{array}
+\label{eq:Fx}
 \end{equation}
 \begin{equation}
 \begin{array}{lcl}
@@ -150,7 +152,7 @@ This system is a linear system in the three variables $F_x$, $F_y$ and $F_z$. We
 		&& - m P_{1,y} \cos\alpha + m^2 P_{1,y} \cos\alpha) \\
 		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
 \end{array}
-\label{eq:}
+\label{eq:Fy}
 \end{equation}
 \begin{equation}
 \begin{array}{lcl}
@@ -164,14 +166,16 @@ This system is a linear system in the three variables $F_x$, $F_y$ and $F_z$. We
 		&& - m P_{1,z} \cos\alpha + m^2 P_{1,z} \cos\alpha) \\
 		&& / (m-1)(1 + m^2 - 2m\cos\alpha)
 \end{array}
-\label{eq:}
+\label{eq:Fz}
 \end{equation}
-
+For the implementation, we strongly suggest to further factorize these formulas and to store the common intermediate results.
 
 \subsection{Dealing with special cases}
-These are the cases in which there is either no fixed point or more than one around which our motion rotates steadily.
+The proposed model contains two singularities in the computations: 
+First, $N$ is not defined when the rotation between the two input frames is zero.
+Second, $F$ goes to infinity when $m$ goes to zero, since the translation of the frames rely on the scaling.
 
-\subsubsection{No rotation}\label{NoRot}
+\subsubsection{No rotation, but scaling}\label{NoRot}
 
 \subsubsection{No rotation, no scaling}
 (N = 0, have only translation)
