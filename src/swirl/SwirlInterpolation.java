@@ -18,9 +18,12 @@ public class SwirlInterpolation implements Interpolation {
 	private Vector3f F;
 	
 	/**
-	 * 0: normal, 1: no rot, no scaling -> linear interpolation
+	 * 0: normal
+	 * 1: no rot, no scaling -> linear interpolation
+	 * 2: no scaling, but translation and rotation -> circular motion in the rotation plane + linear translation
 	 */
 	private int specialCases = 0;
+	private SwirlInterpolation3 noScaleInterpolation = new SwirlInterpolation3(true);
 
 	@Override
 	public void setStartEnd(Frame start, Frame end) {
@@ -41,6 +44,16 @@ public class SwirlInterpolation implements Interpolation {
 			specialCases = 1;
 			System.out.println(" scaling m=" + m);
 			System.out.println(" special case: no rotation, no scaling");
+			return;
+		} else if (m==1) {
+			//In the special case that there is only rotation and translation, but no scaling,
+			//the swirl degenerates to a circular motion in the rotation plane 
+			//plus a linear translation orthogonal to the rotation plane.
+			//This behavior is implemented in SwirlInterpolation3
+			specialCases = 2;
+			noScaleInterpolation.setStartEnd(start, end);
+			System.out.println(" scaling m=" + m);
+			System.out.println(" special case: no scaling but rotation and translation");
 			return;
 		}
 		specialCases = 0;
@@ -268,6 +281,12 @@ public class SwirlInterpolation implements Interpolation {
 	
 	@Override
 	public void interpolate(float t, Frame toSet) {
+		if (specialCases == 2) {
+			//no scaling, but translation and rotation -> circular motion in the rotation plane + linear translation
+			noScaleInterpolation.interpolate(t, toSet);
+			return;
+		}
+		
 		interpolate(t, start.P, toSet.P);
 		Vector3f refP = toSet.P;
 
@@ -338,6 +357,8 @@ public class SwirlInterpolation implements Interpolation {
 			str.append("rotation center F=").append(F);
 		} else if (specialCases == 1) {
 			str.append("special case: no rotation, no scaling, translation along the vector ").append(end.P.subtract(start.P));
+		} else if (specialCases == 2) {
+			str.append("special case: no scaling, but rotation and translation");
 		}
 		return str.toString();
 	}

@@ -27,12 +27,22 @@ public class SwirlInterpolation3 implements Interpolation {
 	private Quaternion startQuat = new Quaternion();
 	private Quaternion endQuat = new Quaternion();
 	
+	private boolean forceScaleToOne = false;
+	
 	private Pv3D.pt testA;
 	private Pv3D.vec testAB;
 	private Pv3D.pt testC;
 	private Pv3D.vec testCD;
 	private Pv3D.pt testF;
 
+	public SwirlInterpolation3() {
+		forceScaleToOne = false;
+	}
+	public SwirlInterpolation3(boolean forceScaleToOne) {
+		this.forceScaleToOne = forceScaleToOne;
+	}
+	
+	
 	@Override
 	public void setStartEnd(Frame start, Frame end) {
 		this.start = start;
@@ -87,7 +97,7 @@ public class SwirlInterpolation3 implements Interpolation {
 		Vector2f CD = new Vector2f(D); CD.subtractLocal(C);
 		System.out.println(" AB="+AB+"  CD="+CD);
 		spiralAngle = spiralAngle(AB, CD);
-		spiralScale = spiralScale(AB, CD);
+		spiralScale = forceScaleToOne ? 1 : spiralScale(AB, CD);
 		spiralCenter = spiralCenter(spiralAngle, spiralScale, A, C);
 		System.out.println(" spiral angle alpha="+spiralAngle+"  ( "+(spiralAngle*180/Math.PI)+"° )");
 		System.out.println(" spiral scale m="+spiralScale);
@@ -95,7 +105,7 @@ public class SwirlInterpolation3 implements Interpolation {
 		
 		zTranslation = end.P.dot(N) - start.P.dot(N);
 		System.out.println(" z-translation="+zTranslation);
-		translationScale = end.I.length() / start.I.length();
+		translationScale = forceScaleToOne ? 1 : end.I.length() / start.I.length();
 		System.out.println(" translation scale="+translationScale);
 		
 		startQuat.fromAxes(start.I.normalize(), start.J.normalize(), start.K.normalize());
@@ -179,22 +189,6 @@ public class SwirlInterpolation3 implements Interpolation {
 		toSet.I.multLocal(s);
 		toSet.J.multLocal(s);
 		toSet.K.multLocal(s);
-		
-//		Vector3f PI = new Vector3f(start.P); PI.addLocal(start.I);
-//		PI = interpolate(t, PI);
-//		PI.subtractLocal(toSet.P);
-//		PI.multLocal((float) Math.pow(translationScale, t));
-//		toSet.I.set(PI);
-//		Vector3f PJ = new Vector3f(start.P); PJ.addLocal(start.J);
-//		PJ = interpolate(t, PJ);
-//		PJ.subtractLocal(toSet.P);
-//		PJ.multLocal((float) Math.pow(translationScale, t));
-//		toSet.J.set(PJ);
-//		Vector3f PK = new Vector3f(start.P); PK.addLocal(start.K);
-//		PK = interpolate(t, PK);
-//		PK.subtractLocal(toSet.P);
-//		PK.multLocal((float) Math.pow(translationScale, t));
-//		toSet.K.set(PK);
 	}
 	private Vector3f interpolate(float t, Vector3f point) {
 		//Project in rotation plane
