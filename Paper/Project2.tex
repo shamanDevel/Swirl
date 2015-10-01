@@ -1,4 +1,4 @@
-\documentclass[tikz, journal, letterpaper]{IEEEtran}
+\documentclass[journal, letterpaper]{IEEEtran}
 %\documentclass{scrartcl}
 
 \usepackage[ngerman,english]{babel}
@@ -84,9 +84,10 @@ We wish to create a swirling motion in 3D related to the logarithmic spiral in 2
  P(t) := F + m^t FP_0 ^{\;\circ} (\alpha t; N)
 \label{eq:Interpolation}
 \end{equation}
+Since the rotation and scaling are steady on its own and these operations commute, the final motion is also steady.
 
 \subsection{3D rotation}
-A rotation in 2D is very straightforward because there is no choice of the rotation axis. In 3D we're given the rotation axis and rotate around it in the following way:
+A rotation in 2D is very straightforward because there is no choice of the rotation axis. In 3D we are given the rotation axis and rotate around it in the following way:
 
 \begin{equation}
 \begin{array}{lcl}
@@ -159,7 +160,7 @@ Then we define
  \alpha = \max \{ \cos^{-1}(I_0' \bullet I_1'), \cos^{-1}(J_0' \bullet J_1'), \cos^{-1}(K_0' \bullet K_1') \}
 \label{eq:}
 \end{equation}
-We take the maximum angle here because all angles are equal by the definition of $N$. At most one of these angles can be zero, this happens in the case if the rotation axis is exactly orthogonal to that frame axis, see \ref{fig:P1}.
+We take the maximum angle here because all angles are equal by the definition of $N$. At most one of these angles can be zero, this happens in the case if the rotation axis is exactly orthogonal to that frame axis, see Fig. \ref{fig:P1}.
 \begin{figure}
 	\centering
 		\includegraphics[scale=0.4]{pictures/P1.png}
@@ -220,12 +221,12 @@ For the implementation, we strongly suggest to further factorize these formulas 
 
 \subsection{Dealing with special cases}
 The proposed model contains two singularities in the computations: 
-First, $N$ is not defined when the rotation between the two input frames is zero.
-Second, $F$ goes to infinity when $m$ goes to zero, since the translation of the frames rely on the scaling.
+First, $N$ is the zero vector when the rotation between the two input frames is zero.
+Second, $F$ goes to infinity when $m$ goes to one, since the translation of the frames rely on the scaling.
 
 \subsubsection{No rotation, but scaling}\label{NoRot}
 In the case that there is no rotation, the rotation axis $N$ is the zero vector and the rotation angle $\alpha$ is also zero.
-The translation is then realized by the scaling, see Fig. \ref{fig:P2}. The fixpoint $F$ is calculated as usual. It can also be seen as the intersection point of the lines connecting the tips of the arrows and the frame origin from the start frame to the end frame.
+The translation is then realized by the scaling, see Fig. \ref{fig:P2}. The fixpoint $F$ is calculated as usual. Intuitively, this is the intersection point of the lines connecting the tips of the arrows and the frame origin from the start frame to the end frame.
 \begin{figure}
 	\centering
 		\includegraphics[scale=0.4]{pictures/P2.png}
@@ -253,6 +254,9 @@ If the scaling factor $m$ is 1, $F$ goes to infinity. The swirl degenerates to a
 This special case can be implemented by projecting the frames in the rotation plane, solving the circular motion there equivalent to the Logarithmic Spiral in 2D and then adding a translation orthogonal to the rotation plane.
 
 \section{Implementation}
+We provide a framework for playing around with our Swirl Implementation. You can rotate the camera and scale it. Furthermore, the start and end frame can be modified by clicking and dragging the center of the frames or the tips of the frame axes. Additionally, you can select if you want to display the rotation axis $N$ (gray line) and the fixpoint $F$ (gray sphere on the rotation axis) and if the extrapolating frames should be drawn or not. 
+
+A typical swirl produced by our program is shown in Fig. \ref{fig:P3}. You can see how the motion is attracted by the fixpoint $F$.
 
 \begin{figure}
 	\centering
