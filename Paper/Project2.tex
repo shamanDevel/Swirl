@@ -52,7 +52,7 @@ We are provided with a starting and ending frame in 3D, called $A_0$ and $A_1$. 
 \section{Input}
 The Frames $A_0$ and $A_1$ consist of a point $P_i$ and a right hand coordinate system of orthogonal vectors $I_i$, $J_i$, and $K_i$, each of the same length ($i \in \{0,1\}$). All vectors are three dimensional.
 \subsection{Terms} 
-1. An \underline{affine} transformation in three dimensions can be expressed as a 4x4 matrix multiplied onto a point or a vector, is reversible, and can be expressed solely as a combination of rotation, translation, and scaling.
+1. An \underline{affine} transformation in three dimensions can be expressed as a 4x4 matrix multiplied onto a point or a vector, is reversible, and can be expressed solely as a combination of rotation, translation, scaling and shearing. In this work, we only concentrate on rotation, translation and scaling.
 \newline
 2. A \underline{continuous} transformation is one in which $\forall \epsilon>0 \\ \exists \delta>0 \; : \; |P_x - P_y|<\epsilon \; \forall x,y \; \text{with} \; |x-y|<\delta$. $P_x$ and $P_y$ denotes the interpolated point at time $x$ and $y$. Intuitively, this means we can draw the motion with a pen in a single stroke.
 \newline
@@ -68,7 +68,7 @@ The formula for this approach is the following:
 \label{eq:logSpiral}
 \end{equation}
 $FP_0 ^{\;\circ} (\alpha t)$ denotes the normal 2d rotation of the vector $FP_0$ around the origin with the angle $\alpha t$.
-\begin{figure}[H]
+\begin{figure}
 	\centering
 		\includegraphics[scale=0.4]{pictures/P6.png}
 	\caption{log spiral in 2D}
@@ -256,7 +256,7 @@ If we start with the case presented in the previous section and let $m$ run to 1
 If the scaling factor $m$ is 1, $F$ goes to infinity. The swirl degenerates to a circular movement in the rotation plane plus a linear translation orthogonal to the rotation plane. The swirl is therefore a perfect spiral, see Fig. \ref{fig:P7}.
 \begin{figure}
 	\centering
-		\includegraphics[scale=0.4]{pictures/P7.png}
+		\includegraphics[scale=0.3]{pictures/P7.png}
 	\caption{no scaling, but rotation and translation}
 	\label{fig:P7}
 \end{figure}
@@ -269,10 +269,12 @@ A typical swirl produced by our program is shown in Fig. \ref{fig:P3}. You can s
 
 \begin{figure}
 	\centering
-		\includegraphics[scale=0.4]{pictures/P3.png}
+		\includegraphics[scale=0.3]{pictures/P3.png}
 	\caption{swirl motion is attracted by the fixpoint $F$}
 	\label{fig:P3}
 \end{figure}
 
+\section{Future work}
+As an extension to this work, we could include shearing in the interpolation model. With shearing, every affine transformation would be supported.
 
 \end{document}
