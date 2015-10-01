@@ -47,16 +47,16 @@
 \end{tikzpicture}
 
 \section{Objective}
-We are provided with a starting and ending frame, called $A_0$ and $A_1$. We wish to create a continuous, affine and steady motion which interpolates $A_0$ and $A_1$.
+We are provided with a starting and ending frame in 3D, called $A_0$ and $A_1$. We wish to create a continuous, affine and steady motion which interpolates $A_0$ and $A_1$.
  
 \section{Input}
-The Frames $A_0$ and $A_1$ consist of a point $P_i$ and a right hand coordinate system of orthogonal vectors $I_i$, $J_i$, and $K_i$, each of the same length ($i \in \{0,1\}$).
+The Frames $A_0$ and $A_1$ consist of a point $P_i$ and a right hand coordinate system of orthogonal vectors $I_i$, $J_i$, and $K_i$, each of the same length ($i \in \{0,1\}$). All vectors are three dimensional.
 \subsection{Terms} 
 1. An \underline{affine} transformation in three dimensions can be expressed as a 4x4 matrix multiplied onto a point or a vector, is reversible, and can be expressed solely as a combination of rotation, translation, and scaling.
 \newline
-2. A \underline{continuous} transformation is one in which $\forall \epsilon>0 \; \exists \delta>0 \; \text{s.th.} \; |P_x - P_y|<\epsilon \; \forall x,y \; \text{with} \; |x-y|<\delta$. $P_x$ and $P_y$ denotes the interpolated point at time $x$ and $y$. Intuitively, this means we can draw the motion with a pen in a single stroke.
+2. A \underline{continuous} transformation is one in which $\forall \epsilon>0 \\ \exists \delta>0 \; : \; |P_x - P_y|<\epsilon \; \forall x,y \; \text{with} \; |x-y|<\delta$. $P_x$ and $P_y$ denotes the interpolated point at time $x$ and $y$. Intuitively, this means we can draw the motion with a pen in a single stroke.
 \newline
-3. A \underline{steady} transformation preserves the angle between a pair of frames, and is independent of some time t. 
+3. A \underline{steady} transformation is independent of the time t and the velocities are constant over time. 
 
 \section{Related interpolation schemes}
 
@@ -76,7 +76,7 @@ $FP_0 ^{\;\circ} (\alpha t)$ denotes the normal 2d rotation of the vector $FP_0$
 \end{figure}
 
 \subsection{Linear interpolation in 3D}
-For all points in $A_0$, draw a straight line to its corresponding point in $A_1$. Motion is simply moving the frame along these lines.  This is neither an elegant solution nor does it preserve the area of the frame.
+For all points in $A_0$, draw a straight line to its corresponding point in $A_1$. Motion is simply moving the frame along these lines.  This is neither an elegant solution nor is it steady.
 
 \section{Proposed model}
 We wish to create a swirling motion in 3D related to the logarithmic spiral in 2D. Therefore, we are using a combination of linear rotation around the rotation axis $N$ with the origin in $F$ and an exponential scaling with the factor $m$. We propose the following formula:
@@ -115,7 +115,7 @@ Fig. \ref{tikz:Rot} visualizes the rotation around the axis $N$ in 3D.
 	\draw[line width=1.5mm,color=black,->,line cap=round] (0,0) -- (0,2);
 	\node at (0.4,2) {$N$};
 	\node at (-0.7,1) {$FP_0$};
-	\node at (0.5,0.7) {$FP_1$};
+	\node at (1.7,0.7) {$FP_1=FP_0 ^{\;\circ} (\alpha; N)$};
 	\node at (-1.8,0.5) {$W$};
 	\node at (1,-0.4) {$W$};
 	\node at (-0.75,-0.3) {$U$};
@@ -223,6 +223,15 @@ For the implementation, we strongly suggest to further factorize these formulas 
 The proposed model contains two singularities in the computations: 
 First, $N$ is the zero vector when the rotation between the two input frames is zero.
 Second, $F$ goes to infinity when $m$ goes to one, since the translation of the frames rely on the scaling.
+
+\subsubsection{No translation}
+Strictly speaking, this case is no special case at all. When there is no translation, $P_0$, $P_1$ and $F$ are all at the same position, see Fig. \ref{fig:P8}. This model handles this case without further additions.
+\begin{figure}
+	\centering
+		\includegraphics[scale=0.4]{pictures/P8.png}
+	\caption{no translation}
+	\label{fig:P8}
+\end{figure}
 
 \subsubsection{No rotation, but scaling}\label{NoRot}
 In the case that there is no rotation, the rotation axis $N$ is the zero vector and the rotation angle $\alpha$ is also zero.
