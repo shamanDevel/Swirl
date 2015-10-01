@@ -58,6 +58,10 @@ public class Swirl extends PApplet {
 			menu = "1-4: change interpolation, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, a:anim, e:show extrapolating, d:show debug, #:quit",
 			guide = "click'n'drag center of frames or arrow tips to change the start frame (green) and end frame (red)"; // user's guide
 
+	public static void main(String[] args) {
+		PApplet.main(Swirl.class.getName());
+	}
+	
 	public void settings() {
 		size(900, 900, P3D); // p3D means that we will do 3D graphics
 		noSmooth();

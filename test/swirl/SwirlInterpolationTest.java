@@ -48,4 +48,6 @@ public class SwirlInterpolationTest {
 		assertValidFrames(i, startFrame, endFrame);
 		assertSteadyMotion(i, startFrame, endFrame);
 	}
+	
+	//Running out of time for more tests
 }
